@@ -1,0 +1,5 @@
+# Environment variables - never commit these
+.env
+
+# Node dependencies - these get installed, not stored in git
+node_modules/
