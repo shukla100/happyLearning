@@ -23,7 +23,7 @@ app.post('/explore', async (req, res) => {
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
+      max_tokens: 1500,
       messages: [
         {
           role: 'user',
@@ -32,6 +32,7 @@ app.post('/explore', async (req, res) => {
 Respond with a JSON object in exactly this format:
 {
   "explanation": "A clear, expert-level but accessible explanation of the concept. No fluff. Treat the user as intelligent but non-technical.",
+  "realWorldExample": "A concrete, specific scenario of how this concept plays out inside a real software team or company. Name a real company or team type. Make it feel grounded and practical, not textbook.",
   "branches": [
     { "id": "1", "label": "Branch concept name", "reason": "One sentence on why this naturally connects" },
     { "id": "2", "label": "Branch concept name", "reason": "One sentence on why this naturally connects" },

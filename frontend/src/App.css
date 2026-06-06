@@ -161,6 +161,29 @@ header p {
   font-size: 15px;
 }
 
+.real-world {
+  background: #16161f;
+  border: 1px solid #252530;
+  border-left: 3px solid #3ecf8e;
+  border-radius: 10px;
+  padding: 22px 26px;
+}
+
+.real-world p {
+  color: #b0b0c8;
+  line-height: 1.75;
+  font-size: 15px;
+}
+
+.section-label {
+  font-size: 11px;
+  color: #3ecf8e;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
 .branches-label {
   font-size: 12px;
   color: #444;

@@ -89,6 +89,13 @@ function App() {
             <p>{result.explanation}</p>
           </div>
 
+          {result.realWorldExample && (
+            <div className="real-world">
+              <p className="section-label">In practice</p>
+              <p>{result.realWorldExample}</p>
+            </div>
+          )}
+
           <div className="branches">
             <p className="branches-label">Where do you want to go next?</p>
             <div className="branch-grid">
