@@ -35,8 +35,8 @@ app.post('/explore', async (req, res) => {
 
 Respond with a JSON object in exactly this format:
 {
-  "explanation": "A clear, expert-level but accessible explanation of the concept. No fluff. Treat the user as intelligent but non-technical.",
-  "realWorldExample": "A concrete, specific scenario of how this concept plays out inside a real software team or company. Name a real company or team type. Make it feel grounded and practical, not textbook.",
+  "explanation": "3-4 punchy sentences max. Expert-level insight, zero fluff. Write like a brilliant engineer explaining this to a smart friend over coffee — direct, vivid, no jargon without explanation. Make the core idea land immediately.",
+  "realWorldExample": "2-3 sentences. Name a real company. Make it feel like something that actually happened in a real engineering meeting, not a textbook scenario.",
   "branches": [
     { "id": "1", "label": "Branch concept name", "reason": "One sentence on why this naturally connects" },
     { "id": "2", "label": "Branch concept name", "reason": "One sentence on why this naturally connects" },

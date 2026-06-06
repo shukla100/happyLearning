@@ -1,24 +1,37 @@
+.neural-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .app {
-  max-width: 820px;
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 52px 24px 80px;
+  padding: 52px 40px 80px;
 }
 
 header {
-  margin-bottom: 40px;
+  margin-bottom: 44px;
 }
 
 header h1 {
-  font-size: 30px;
-  font-weight: 700;
-  color: #fff;
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e1b4b;
   margin-bottom: 6px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.8px;
 }
 
 header p {
-  color: #555;
+  color: #7c3aed;
   font-size: 15px;
+  font-weight: 500;
 }
 
 .input-form {
@@ -29,84 +42,92 @@ header p {
 
 .input-form input {
   flex: 1;
-  padding: 13px 18px;
-  background: #16161f;
-  border: 1px solid #252530;
-  border-radius: 10px;
-  color: #e8e8f0;
+  padding: 14px 20px;
+  background: #fff;
+  border: 1.5px solid #e5e0ff;
+  border-radius: 12px;
+  color: #1e1b4b;
   font-size: 16px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.06);
 }
 
 .input-form input:focus {
-  border-color: #6c63ff;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .input-form input::placeholder {
-  color: #444;
+  color: #c4b5fd;
 }
 
 .input-form input:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .input-form button {
-  padding: 13px 26px;
-  background: #6c63ff;
+  padding: 14px 28px;
+  background: #7c3aed;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
   white-space: nowrap;
 }
 
 .input-form button:hover:not(:disabled) {
-  background: #5a52e0;
+  background: #6d28d9;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-1px);
 }
 
 .input-form button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .history {
   margin-bottom: 32px;
   font-size: 13px;
-  color: #444;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .history-btn {
   background: none;
   border: none;
-  color: #6c63ff;
+  color: #7c3aed;
   cursor: pointer;
   font-size: 13px;
-  padding: 0;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
 }
 
 .history-btn:hover {
-  color: #9b94ff;
-  text-decoration: underline;
+  background: #ede9fe;
 }
 
 .arrow {
-  color: #333;
+  color: #c4b5fd;
+  font-size: 11px;
 }
 
 .error {
-  background: #1e1218;
-  border: 1px solid #4a1a2a;
-  color: #ff6b6b;
+  background: #fff;
+  border: 1.5px solid #fca5a5;
+  color: #dc2626;
   padding: 14px 18px;
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 24px;
   font-size: 14px;
 }
@@ -115,16 +136,17 @@ header p {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #555;
+  color: #7c3aed;
   font-size: 14px;
+  font-weight: 500;
   margin: 40px 0;
 }
 
 .spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid #252530;
-  border-top-color: #6c63ff;
+  border: 2px solid #ede9fe;
+  border-top-color: #7c3aed;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
@@ -135,109 +157,151 @@ header p {
 }
 
 .result {
+  display: grid;
+  grid-template-columns: 1fr 280px 280px;
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+
+.result-left {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 16px;
+}
+
+.followup {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.connect {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.branches {
+  grid-column: 1 / -1;
+  grid-row: 2;
 }
 
 .explanation {
-  background: #16161f;
-  border: 1px solid #252530;
-  border-radius: 12px;
-  padding: 28px 32px;
+  background: #fff;
+  border: 1.5px solid #ede9fe;
+  border-radius: 16px;
+  padding: 30px 32px;
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.07);
 }
 
 .explanation h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 14px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e1b4b;
+  margin-bottom: 12px;
   text-transform: capitalize;
+  letter-spacing: -0.4px;
 }
 
 .explanation p {
-  color: #b0b0c8;
-  line-height: 1.75;
+  color: #111827;
+  line-height: 1.8;
   font-size: 15px;
 }
 
 .real-world {
-  background: #16161f;
-  border: 1px solid #252530;
-  border-left: 3px solid #3ecf8e;
-  border-radius: 10px;
-  padding: 22px 26px;
+  background: #fff;
+  border: 1.5px solid #ede9fe;
+  border-left: 3px solid #059669;
+  border-radius: 16px;
+  padding: 22px 28px;
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.05);
 }
 
 .real-world p {
-  color: #b0b0c8;
-  line-height: 1.75;
+  color: #111827;
+  line-height: 1.8;
   font-size: 15px;
 }
 
 .section-label {
   font-size: 11px;
-  color: #3ecf8e;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  margin-bottom: 10px;
-  font-weight: 600;
+  margin-bottom: 12px;
 }
 
-.followup {
-  background: #16161f;
-  border: 1px solid #252530;
-  border-radius: 12px;
-  padding: 22px 26px;
+.real-world .section-label {
+  color: #059669;
+}
+
+.followup,
+.connect {
+  background: #fff;
+  border: 1.5px solid #ede9fe;
+  border-radius: 16px;
+  padding: 22px 28px;
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.05);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
+.followup .section-label {
+  color: #7c3aed;
+}
+
 .followup-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.followup-form input {
-  flex: 1;
-  padding: 11px 16px;
-  background: #0f0f13;
-  border: 1px solid #252530;
-  border-radius: 8px;
-  color: #e8e8f0;
+.followup-form input,
+.connect-form input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f5f3ff;
+  border: 1.5px solid #e5e0ff;
+  border-radius: 10px;
+  color: #1e1b4b;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.followup-form input:focus {
-  border-color: #6c63ff;
+.followup-form input:focus,
+.connect-form input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
 }
 
-.followup-form input::placeholder {
-  color: #444;
+.followup-form input::placeholder,
+.connect-form input::placeholder {
+  color: #c4b5fd;
 }
 
-.followup-form input:disabled {
-  opacity: 0.5;
+.followup-form input:disabled,
+.connect-form input:disabled {
+  opacity: 0.6;
 }
 
 .followup-form button {
-  padding: 11px 20px;
-  background: #252530;
-  color: #e8e8f0;
+  width: 100%;
+  padding: 12px 16px;
+  background: #ede9fe;
+  color: #7c3aed;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-  white-space: nowrap;
+  transition: background 0.2s;
 }
 
 .followup-form button:hover:not(:disabled) {
-  background: #2e2e40;
+  background: #ddd6fe;
 }
 
 .followup-form button:disabled {
@@ -250,23 +314,56 @@ header p {
 }
 
 .followup-answer {
-  padding: 14px 16px;
-  background: #0f0f13;
-  border-radius: 8px;
-  border: 1px solid #252530;
+  padding: 16px 18px;
+  background: #f5f3ff;
+  border-radius: 10px;
+  border: 1.5px solid #e5e0ff;
 }
 
 .followup-answer p {
-  color: #b0b0c8;
-  line-height: 1.75;
+  color: #111827;
+  line-height: 1.8;
   font-size: 14px;
 }
 
+.connect-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.connect-form button {
+  width: 100%;
+  padding: 12px 16px;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+}
+
+.connect-form button:hover:not(:disabled) {
+  background: #6d28d9;
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-1px);
+}
+
+.connect-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .branches-label {
-  font-size: 12px;
-  color: #444;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a78bfa;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   margin-bottom: 14px;
 }
 
@@ -277,84 +374,35 @@ header p {
 }
 
 .branch-btn {
-  background: #16161f;
-  border: 1px solid #252530;
-  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid #e5e0ff;
+  border-radius: 12px;
   padding: 16px 18px;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.05);
 }
 
 .branch-btn:hover {
-  border-color: #6c63ff;
-  background: #1a1a28;
+  border-color: #7c3aed;
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
 }
 
 .branch-label {
   display: block;
-  color: #e8e8f0;
+  color: #1e1b4b;
   font-size: 14px;
-  font-weight: 600;
-}
-
-.connect-form {
-  display: flex;
-  gap: 10px;
-}
-
-.connect-form input {
-  flex: 1;
-  padding: 13px 18px;
-  background: #16161f;
-  border: 1px solid #252530;
-  border-radius: 10px;
-  color: #e8e8f0;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.connect-form input:focus {
-  border-color: #6c63ff;
-}
-
-.connect-form input::placeholder {
-  color: #444;
-}
-
-.connect-form input:disabled {
-  opacity: 0.5;
-}
-
-.connect-form button {
-  padding: 13px 26px;
-  background: #6c63ff;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
-  white-space: nowrap;
-}
-
-.connect-form button:hover:not(:disabled) {
-  background: #5a52e0;
-}
-
-.connect-form button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+  font-weight: 700;
 }
 
 .branch-reason {
   display: block;
-  color: #555;
+  color: #374151;
   font-size: 12px;
   line-height: 1.5;
 }

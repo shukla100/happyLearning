@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import NeuralBackground from './NeuralBackground'
 
 function App() {
   const [input, setInput] = useState('')
@@ -83,6 +84,7 @@ function App() {
 
   return (
     <div className="app">
+      <NeuralBackground />
       <header>
         <h1>happyLearning</h1>
         <p>Type a concept. Follow your curiosity.</p>
@@ -126,17 +128,19 @@ function App() {
 
       {result && (
         <div className="result">
-          <div className="explanation">
-            <h2>{history[history.length - 1]}</h2>
-            <p>{result.explanation}</p>
-          </div>
-
-          {result.realWorldExample && (
-            <div className="real-world">
-              <p className="section-label">In practice</p>
-              <p>{result.realWorldExample}</p>
+          <div className="result-left">
+            <div className="explanation">
+              <h2>{history[history.length - 1]}</h2>
+              <p>{result.explanation}</p>
             </div>
-          )}
+
+            {result.realWorldExample && (
+              <div className="real-world">
+                <p className="section-label">In practice</p>
+                <p>{result.realWorldExample}</p>
+              </div>
+            )}
+          </div>
 
           <div className="followup">
             <p className="section-label">Ask a question about this</p>
@@ -145,7 +149,7 @@ function App() {
                 type="text"
                 value={followUpInput}
                 onChange={e => setFollowUpInput(e.target.value)}
-                placeholder="e.g. wait, what does a B-tree actually look like?"
+                placeholder="e.g. what does a B-tree look like?"
                 disabled={followUpLoading}
               />
               <button type="submit" disabled={followUpLoading || !followUpInput.trim()}>
@@ -165,6 +169,22 @@ function App() {
             )}
           </div>
 
+          <div className="connect">
+            <p className="section-label">Based on this, explore...</p>
+            <form onSubmit={handleConnect} className="connect-form">
+              <input
+                type="text"
+                value={connectInput}
+                onChange={e => setConnectInput(e.target.value)}
+                placeholder={`Based on ${history[history.length - 1] || 'this'}, explain...`}
+                disabled={loading}
+              />
+              <button type="submit" disabled={loading || !connectInput.trim()}>
+                Explore
+              </button>
+            </form>
+          </div>
+
           <div className="branches">
             <p className="branches-label">Where do you want to go next?</p>
             <div className="branch-grid">
@@ -180,19 +200,6 @@ function App() {
               ))}
             </div>
           </div>
-
-          <form onSubmit={handleConnect} className="connect-form">
-            <input
-              type="text"
-              value={connectInput}
-              onChange={e => setConnectInput(e.target.value)}
-              placeholder={`Based on ${history[history.length - 1] || 'this'}, explain...`}
-              disabled={loading}
-            />
-            <button type="submit" disabled={loading || !connectInput.trim()}>
-              Explore
-            </button>
-          </form>
         </div>
       )}
     </div>

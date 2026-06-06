@@ -102,6 +102,16 @@ When the frontend sends data to `/explore`, Express knows to run that specific b
 
 ---
 
+## How a node is born and what connects them
+
+Every node starts the same way — something triggers the `explore()` function in the frontend. That function calls the `POST /explore` route on the backend, which sends the concept to Claude and gets back `{ explanation, realWorldExample, branches }`. The frontend stores that response in a piece of state called `result`, and React immediately redraws the screen to show it. At the same time, the concept gets added to a second piece of state called `history`, which powers the breadcrumb trail at the top.
+
+Three things can trigger `explore()` and therefore create a new node: typing in the top search bar, clicking a branch button, or submitting the "based on this" field at the bottom (which also passes the current concept as `context` to the route, so Claude connects the two). Each time, `result` is replaced and `history` grows by one.
+
+Two things do NOT create a new node: the follow-up question box calls `POST /followup` instead, which only updates `followUpAnswer` state — the current node stays untouched. Clicking a history item re-calls `explore()` on a past concept, which does replace the node but doesn't add a duplicate to history.
+
+---
+
 ## Environment & Secrets
 
 **Location:** `happyLearning/.env`
