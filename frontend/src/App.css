@@ -301,6 +301,57 @@ header p {
   font-weight: 600;
 }
 
+.connect-form {
+  display: flex;
+  gap: 10px;
+}
+
+.connect-form input {
+  flex: 1;
+  padding: 13px 18px;
+  background: #16161f;
+  border: 1px solid #252530;
+  border-radius: 10px;
+  color: #e8e8f0;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.connect-form input:focus {
+  border-color: #6c63ff;
+}
+
+.connect-form input::placeholder {
+  color: #444;
+}
+
+.connect-form input:disabled {
+  opacity: 0.5;
+}
+
+.connect-form button {
+  padding: 13px 26px;
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+
+.connect-form button:hover:not(:disabled) {
+  background: #5a52e0;
+}
+
+.connect-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .branch-reason {
   display: block;
   color: #555;

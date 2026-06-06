@@ -14,11 +14,15 @@ const anthropic = new Anthropic.default({
 });
 
 app.post('/explore', async (req, res) => {
-  const { concept } = req.body;
+  const { concept, context } = req.body;
 
   if (!concept) {
     return res.status(400).json({ error: 'No concept provided' });
   }
+
+  const intro = context
+    ? `You are a highly skilled engineer and technical thinking partner. The user has been learning about "${context}" and now wants to explore "${concept}" through that lens. Frame your explanation by connecting it back to what they just learned about "${context}" — make the connection explicit and natural.`
+    : `You are a highly skilled engineer and technical thinking partner. The user wants to learn about: "${concept}".`;
 
   try {
     const message = await anthropic.messages.create({
@@ -27,7 +31,7 @@ app.post('/explore', async (req, res) => {
       messages: [
         {
           role: 'user',
-          content: `You are a highly skilled engineer and technical thinking partner. The user wants to learn about: "${concept}".
+          content: `${intro}
 
 Respond with a JSON object in exactly this format:
 {

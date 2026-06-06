@@ -10,19 +10,21 @@ function App() {
   const [followUpInput, setFollowUpInput] = useState('')
   const [followUpAnswer, setFollowUpAnswer] = useState(null)
   const [followUpLoading, setFollowUpLoading] = useState(false)
+  const [connectInput, setConnectInput] = useState('')
 
-  async function explore(concept) {
+  async function explore(concept, context = null) {
     setLoading(true)
     setError(null)
     setResult(null)
     setFollowUpAnswer(null)
     setFollowUpInput('')
+    setConnectInput('')
 
     try {
       const response = await fetch('http://localhost:3001/explore', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ concept }),
+        body: JSON.stringify({ concept, context }),
       })
 
       if (!response.ok) throw new Error('Backend error')
@@ -70,6 +72,13 @@ function App() {
     } finally {
       setFollowUpLoading(false)
     }
+  }
+
+  function handleConnect(e) {
+    e.preventDefault()
+    if (!connectInput.trim()) return
+    explore(connectInput.trim(), history[history.length - 1])
+    setConnectInput('')
   }
 
   return (
@@ -171,6 +180,19 @@ function App() {
               ))}
             </div>
           </div>
+
+          <form onSubmit={handleConnect} className="connect-form">
+            <input
+              type="text"
+              value={connectInput}
+              onChange={e => setConnectInput(e.target.value)}
+              placeholder={`Based on ${history[history.length - 1] || 'this'}, explain...`}
+              disabled={loading}
+            />
+            <button type="submit" disabled={loading || !connectInput.trim()}>
+              Explore
+            </button>
+          </form>
         </div>
       )}
     </div>
