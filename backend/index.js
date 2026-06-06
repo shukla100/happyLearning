@@ -56,6 +56,36 @@ Return only the JSON. No markdown, no extra text.`,
   }
 });
 
+app.post('/followup', async (req, res) => {
+  const { concept, question } = req.body;
+
+  if (!concept || !question) {
+    return res.status(400).json({ error: 'Missing concept or question' });
+  }
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      messages: [
+        {
+          role: 'user',
+          content: `You are a highly skilled engineer and technical thinking partner. The user has been learning about "${concept}" and has a follow-up question.
+
+Question: "${question}"
+
+Answer directly and clearly. Be expert-level but accessible — no fluff, no padding. Treat the user as intelligent but non-technical. 2-4 sentences is ideal unless the question genuinely requires more depth.`,
+        },
+      ],
+    });
+
+    res.json({ answer: message.content[0].text });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong calling Claude' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });

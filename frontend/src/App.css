@@ -184,6 +184,84 @@ header p {
   font-weight: 600;
 }
 
+.followup {
+  background: #16161f;
+  border: 1px solid #252530;
+  border-radius: 12px;
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.followup-form {
+  display: flex;
+  gap: 10px;
+}
+
+.followup-form input {
+  flex: 1;
+  padding: 11px 16px;
+  background: #0f0f13;
+  border: 1px solid #252530;
+  border-radius: 8px;
+  color: #e8e8f0;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.followup-form input:focus {
+  border-color: #6c63ff;
+}
+
+.followup-form input::placeholder {
+  color: #444;
+}
+
+.followup-form input:disabled {
+  opacity: 0.5;
+}
+
+.followup-form button {
+  padding: 11px 20px;
+  background: #252530;
+  color: #e8e8f0;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  white-space: nowrap;
+}
+
+.followup-form button:hover:not(:disabled) {
+  background: #2e2e40;
+}
+
+.followup-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.followup-loading {
+  margin: 0;
+}
+
+.followup-answer {
+  padding: 14px 16px;
+  background: #0f0f13;
+  border-radius: 8px;
+  border: 1px solid #252530;
+}
+
+.followup-answer p {
+  color: #b0b0c8;
+  line-height: 1.75;
+  font-size: 14px;
+}
+
 .branches-label {
   font-size: 12px;
   color: #444;

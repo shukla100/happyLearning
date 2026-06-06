@@ -7,11 +7,16 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [history, setHistory] = useState([])
+  const [followUpInput, setFollowUpInput] = useState('')
+  const [followUpAnswer, setFollowUpAnswer] = useState(null)
+  const [followUpLoading, setFollowUpLoading] = useState(false)
 
   async function explore(concept) {
     setLoading(true)
     setError(null)
     setResult(null)
+    setFollowUpAnswer(null)
+    setFollowUpInput('')
 
     try {
       const response = await fetch('http://localhost:3001/explore', {
@@ -37,6 +42,34 @@ function App() {
     if (!input.trim()) return
     explore(input.trim())
     setInput('')
+  }
+
+  async function askFollowUp(e) {
+    e.preventDefault()
+    if (!followUpInput.trim()) return
+
+    setFollowUpLoading(true)
+    setFollowUpAnswer(null)
+
+    try {
+      const response = await fetch('http://localhost:3001/followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          concept: history[history.length - 1],
+          question: followUpInput.trim(),
+        }),
+      })
+
+      if (!response.ok) throw new Error('Backend error')
+
+      const data = await response.json()
+      setFollowUpAnswer(data.answer)
+    } catch (err) {
+      setFollowUpAnswer('Something went wrong. Is the backend running?')
+    } finally {
+      setFollowUpLoading(false)
+    }
   }
 
   return (
@@ -95,6 +128,33 @@ function App() {
               <p>{result.realWorldExample}</p>
             </div>
           )}
+
+          <div className="followup">
+            <p className="section-label">Ask a question about this</p>
+            <form onSubmit={askFollowUp} className="followup-form">
+              <input
+                type="text"
+                value={followUpInput}
+                onChange={e => setFollowUpInput(e.target.value)}
+                placeholder="e.g. wait, what does a B-tree actually look like?"
+                disabled={followUpLoading}
+              />
+              <button type="submit" disabled={followUpLoading || !followUpInput.trim()}>
+                {followUpLoading ? '...' : 'Ask'}
+              </button>
+            </form>
+            {followUpLoading && (
+              <div className="loading followup-loading">
+                <div className="spinner" />
+                <span>Thinking...</span>
+              </div>
+            )}
+            {followUpAnswer && (
+              <div className="followup-answer">
+                <p>{followUpAnswer}</p>
+              </div>
+            )}
+          </div>
 
           <div className="branches">
             <p className="branches-label">Where do you want to go next?</p>
