@@ -3,3 +3,13 @@
 
 # Node dependencies - these get installed, not stored in git
 node_modules/
+
+# Personal learning data - stays local, never pushed
+backend/sessions/
+backend/brain.json
+
+# Claude Code internal memory files
+.claude/
+
+# Vite build cache
+frontend/.vite/

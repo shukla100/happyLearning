@@ -12,8 +12,10 @@ function App() {
   const [followUpAnswer, setFollowUpAnswer] = useState(null)
   const [followUpLoading, setFollowUpLoading] = useState(false)
   const [connectInput, setConnectInput] = useState('')
+  const [sessionId, setSessionId] = useState(null)
+  const [nodeId, setNodeId] = useState(null)
 
-  async function explore(concept, context = null) {
+  async function explore(concept, context = null, startNew = false) {
     setLoading(true)
     setError(null)
     setResult(null)
@@ -25,13 +27,15 @@ function App() {
       const response = await fetch('http://localhost:3001/explore', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ concept, context }),
+        body: JSON.stringify({ concept, context, sessionId: startNew ? null : sessionId }),
       })
 
       if (!response.ok) throw new Error('Backend error')
 
       const data = await response.json()
       setResult(data)
+      setSessionId(data.sessionId)
+      setNodeId(data.nodeId)
       setHistory(prev => [...prev, concept])
     } catch (err) {
       setError('Something went wrong. Is the backend running?')
@@ -43,7 +47,7 @@ function App() {
   function handleSubmit(e) {
     e.preventDefault()
     if (!input.trim()) return
-    explore(input.trim())
+    explore(input.trim(), null, true)
     setInput('')
   }
 
@@ -61,6 +65,8 @@ function App() {
         body: JSON.stringify({
           concept: history[history.length - 1],
           question: followUpInput.trim(),
+          sessionId,
+          nodeId,
         }),
       })
 

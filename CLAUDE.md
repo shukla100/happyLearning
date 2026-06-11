@@ -27,7 +27,13 @@ JavaScript is used for both frontend and backend.
 
 ## Teaching Requirement
 
-**The user is learning React as we build this project.** Every time code is written, all technical concepts, decisions, and jargon must be explained clearly for a non-technical audience. Do not assume prior knowledge of React, JavaScript frameworks, or backend concepts. Explain the why, not just the what.
+**The user is learning React as we build this project. Follow this teaching approach for every new feature:**
+1. Explain the concept first in plain English before touching any code
+2. Ask Garima questions to check her understanding — make her reason about it, not just receive it
+3. Show small pieces and ask her to explain what she thinks it does before moving on
+4. Build together, not for her — slower pace is correct and intentional
+
+ Every time code is written, all technical concepts, decisions, and jargon must be explained clearly for a non-technical audience. Do not assume prior knowledge of React, JavaScript frameworks, or backend concepts. Explain the why, not just the what.
 
 ## Working on Windows
 
