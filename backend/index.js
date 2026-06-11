@@ -7,12 +7,14 @@ const {
   createNewNode,
   saveSession,
   loadSession,
+  loadAllSessions,
   loadBrain,
   saveBrain,
   recordConceptExplored,
   recordConceptAsBranch,
   recordConnection,
   recordFollowUp,
+  buildBrainContext,
 } = require('./storage');
 
 const app = express();
@@ -38,18 +40,31 @@ app.post('/explore', async (req, res) => {
     session = createNewSession(concept);
   }
 
-  const intro = context
-    ? `You are a highly skilled engineer and technical thinking partner. The user has been learning about "${context}" and now wants to explore "${concept}" through that lens. Frame your explanation by connecting it back to what they just learned about "${context}" — make the connection explicit and natural.`
-    : `You are a highly skilled engineer and technical thinking partner. The user wants to learn about: "${concept}".`;
+  // Read brain.json and build a context summary for Claude
+  const brain = loadBrain();
+  const brainContext = buildBrainContext(brain);
+
+  // The system prompt is the foundational instructions Claude reads before anything else.
+  // We put the learner's brain context here so Claude treats it as background truth,
+  // not as part of the conversation.
+  const systemPrompt = [
+    `You are a highly skilled engineer and expert technical thinking partner. You explain things like a brilliant engineer talking to a smart, curious friend over coffee — direct, vivid, no jargon without explanation.`,
+    brainContext || '',
+  ].filter(Boolean).join('\n\n');
+
+  const userMessage = context
+    ? `The user has been learning about "${context}" and now wants to explore "${concept}" through that lens. Frame your explanation by connecting it back to what they just learned about "${context}" — make the connection explicit and natural.`
+    : `The user wants to learn about: "${concept}".`;
 
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1500,
+      system: systemPrompt,
       messages: [
         {
           role: 'user',
-          content: `${intro}
+          content: `${userMessage}
 
 Respond with a JSON object in exactly this format:
 {
@@ -104,14 +119,23 @@ app.post('/followup', async (req, res) => {
     return res.status(400).json({ error: 'Missing concept or question' });
   }
 
+  const followUpBrain = loadBrain();
+  const followUpBrainContext = buildBrainContext(followUpBrain);
+
+  const followUpSystem = [
+    `You are a highly skilled engineer and expert technical thinking partner. You explain things like a brilliant engineer talking to a smart, curious friend — direct, vivid, no jargon without explanation.`,
+    followUpBrainContext || '',
+  ].filter(Boolean).join('\n\n');
+
   try {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
+      system: followUpSystem,
       messages: [
         {
           role: 'user',
-          content: `You are a highly skilled engineer and technical thinking partner. The user has been learning about "${concept}" and has a follow-up question.
+          content: `The user has been learning about "${concept}" and has a follow-up question.
 
 Question: "${question}"
 
@@ -159,6 +183,85 @@ Return only the JSON. No markdown, no extra text.`,
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong calling Claude' });
+  }
+});
+
+app.get('/sessions', (req, res) => {
+  try {
+    const sessions = loadAllSessions();
+    res.json(sessions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not load sessions' });
+  }
+});
+
+app.get('/brain', (req, res) => {
+  try {
+    const brain = loadBrain();
+    res.json(brain);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not load brain' });
+  }
+});
+
+app.post('/end-session', async (req, res) => {
+  const { sessionId } = req.body;
+
+  if (!sessionId) {
+    return res.status(400).json({ error: 'No sessionId provided' });
+  }
+
+  const session = loadSession(sessionId);
+  if (!session) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  const token = process.env.GITHUB_TOKEN;
+  const repoFullName = process.env.GITHUB_SESSIONS_REPO;
+
+  if (!token || !repoFullName) {
+    return res.status(500).json({ error: 'GitHub credentials not configured in .env' });
+  }
+
+  const [owner, repo] = repoFullName.split('/');
+
+  // Dynamic import works here because @octokit/rest v22 is ESM-only
+  const { Octokit } = await import('@octokit/rest');
+  const octokit = new Octokit({ auth: token });
+
+  async function pushFile(filePath, content) {
+    const encoded = Buffer.from(JSON.stringify(content, null, 2)).toString('base64');
+
+    // Check if the file already exists (needed to get its SHA for updates)
+    let sha;
+    try {
+      const existing = await octokit.repos.getContent({ owner, repo, path: filePath });
+      sha = existing.data.sha;
+    } catch {
+      sha = undefined;
+    }
+
+    await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: filePath,
+      message: `session update: ${filePath}`,
+      content: encoded,
+      sha,
+    });
+  }
+
+  try {
+    const brain = loadBrain();
+    await pushFile(`sessions/${sessionId}.json`, session);
+    await pushFile('brain.json', brain);
+
+    res.json({ success: true, message: 'Session and brain backed up to GitHub' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to push to GitHub' });
   }
 });
 

@@ -74,7 +74,93 @@ function loadBrain() {
 
 function saveBrain(brain) {
   brain.lastUpdated = new Date().toISOString();
+  brain.recommendedNext = generateRecommendations(brain);
   fs.writeFileSync(BRAIN_FILE, JSON.stringify(brain, null, 2));
+}
+
+// Fills recommendedNext using two rules:
+// 1. Concepts that surfaced in follow-up questions but were never directly explored (learning gaps)
+// 2. Concepts seen as branches multiple times but never clicked
+function generateRecommendations(brain) {
+  const concepts = brain.concepts;
+
+  // Rule 1: learning gaps — highest priority because the learner already signalled curiosity
+  const gapConcepts = brain.learningGaps
+    .map(g => g.concept)
+    .filter(name => !brain.concepts[name]?.encounteredAs.includes('main'));
+
+  // Rule 2: seen as branch but never explored, sorted by how many sessions they appeared in
+  // (appearing in multiple sessions = recurring relevance = worth exploring)
+  const unseenBranches = Object.entries(concepts)
+    .filter(([name, data]) =>
+      data.encounteredAs.includes('branch') &&
+      !data.encounteredAs.includes('main') &&
+      !gapConcepts.includes(name)
+    )
+    .sort((a, b) => b[1].sessionsAppearedIn.length - a[1].sessionsAppearedIn.length)
+    .slice(0, 6)
+    .map(([name]) => name);
+
+  return [...gapConcepts.slice(0, 3), ...unseenBranches].slice(0, 8);
+}
+
+// Builds a plain-English summary of brain.json to send to Claude as context
+// before it responds to any exploration or follow-up question
+function buildBrainContext(brain) {
+  const concepts = brain.concepts;
+  if (Object.keys(concepts).length === 0) return null;
+
+  // Deeply explored = explored directly at least once with a meaningful depth score
+  const deeplyExplored = Object.entries(concepts)
+    .filter(([, data]) => data.depthScore >= 0.4 && data.encounteredAs.includes('main'))
+    .sort((a, b) => b[1].depthScore - a[1].depthScore)
+    .map(([name]) => name);
+
+  // Lightly explored = explored directly but with low depth (no follow-ups, not revisited)
+  const lightlyExplored = Object.entries(concepts)
+    .filter(([, data]) => data.depthScore > 0 && data.depthScore < 0.4 && data.encounteredAs.includes('main'))
+    .map(([name]) => name);
+
+  // Seen but never explored = offered as branch suggestions, never clicked
+  const seenNotExplored = Object.entries(concepts)
+    .filter(([, data]) => !data.encounteredAs.includes('main'))
+    .sort((a, b) => b[1].sessionsAppearedIn.length - a[1].sessionsAppearedIn.length)
+    .slice(0, 8)
+    .map(([name]) => name);
+
+  // Learning gaps = concepts that came up in follow-up questions but were never explored
+  const gaps = brain.learningGaps.map(
+    g => `"${g.concept}" (came up while studying ${g.surfacedFrom})`
+  );
+
+  const recommended = brain.recommendedNext.slice(0, 5);
+
+  let context = `LEARNER CONTEXT — read this before responding:\n`;
+
+  if (deeplyExplored.length > 0) {
+    context += `\nTopics this learner has explored deeply: ${deeplyExplored.join(', ')}.`;
+  }
+  if (lightlyExplored.length > 0) {
+    context += `\nTopics touched briefly: ${lightlyExplored.join(', ')}.`;
+  }
+  if (seenNotExplored.length > 0) {
+    context += `\nTopics seen as suggestions but never explored: ${seenNotExplored.join(', ')}.`;
+  }
+  if (gaps.length > 0) {
+    context += `\nLearning gaps — surfaced in questions but never directly studied: ${gaps.join('; ')}.`;
+  }
+  if (recommended.length > 0) {
+    context += `\nRecommended next based on their learning patterns: ${recommended.join(', ')}.`;
+  }
+
+  context += `\n\nUse this context to:
+- Skip re-explaining things they already know deeply — build on top of that knowledge instead
+- Connect this new concept to what they already understand where it's natural and useful
+- If this concept relates to one of their learning gaps, surface that connection explicitly
+- Lean branch suggestions toward their gaps and recommended next topics
+- Treat this learner as someone who learns by following curiosity across topics, not linearly`;
+
+  return context;
 }
 
 // Called when a concept is directly explored (main node)
@@ -207,4 +293,5 @@ module.exports = {
   recordFollowUp,
   recordConnection,
   recalculateDepthScore,
+  buildBrainContext,
 };
