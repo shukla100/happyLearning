@@ -29,12 +29,12 @@ export default function TreeView({ concepts }) {
           separation={{ siblings: 1, nonSiblings: 1 }}
           renderCustomNodeElement={({ nodeDatum }) => (
             <g>
-              <circle r={6} fill="#6c8ebf" stroke="#4a6fa5" strokeWidth={2} />
+              <circle r={6} fill="#0d9488" stroke="#0f766e" strokeWidth={2} />
               <text
                 x={12}
                 y={4}
                 fontSize={13}
-                fill="#1a1a2e"
+                fill="#134e4a"
                 fontFamily="inherit"
               >
                 {nodeDatum.name}

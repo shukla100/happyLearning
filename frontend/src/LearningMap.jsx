@@ -71,7 +71,7 @@ export default function LearningMap({ onExplore }) {
             cooldownTicks={0}
             onEngineStop={handleEngineStop}
             nodeLabel="id"
-            linkColor={() => '#c0cfe8'}
+            linkColor={() => '#5eead4'}
             linkWidth={1.5}
             onNodeClick={handleNodeClick}
             nodeCanvasObject={(node, ctx, globalScale) => {
@@ -81,16 +81,16 @@ export default function LearningMap({ onExplore }) {
 
               ctx.beginPath()
               ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI)
-              ctx.fillStyle = isSelected ? '#4a6fa5' : '#6c8ebf'
+              ctx.fillStyle = isSelected ? '#0f766e' : '#0d9488'
               ctx.fill()
               if (isSelected) {
-                ctx.strokeStyle = '#1a1a2e'
+                ctx.strokeStyle = '#134e4a'
                 ctx.lineWidth = 1.5
                 ctx.stroke()
               }
 
               ctx.font = `${fontSize}px system-ui, sans-serif`
-              ctx.fillStyle = '#1a1a2e'
+              ctx.fillStyle = '#134e4a'
               ctx.fillText(node.id, node.x + 9, node.y + fontSize / 3)
             }}
             nodePointerAreaPaint={(node, color, ctx) => {

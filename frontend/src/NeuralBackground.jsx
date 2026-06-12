@@ -35,7 +35,7 @@ function NeuralBackground() {
             ctx.beginPath()
             ctx.moveTo(nodes[i].x, nodes[i].y)
             ctx.lineTo(nodes[j].x, nodes[j].y)
-            ctx.strokeStyle = `rgba(124, 58, 237, ${0.07 * (1 - dist / 170)})`
+            ctx.strokeStyle = `rgba(13, 148, 136, ${0.07 * (1 - dist / 170)})`
             ctx.lineWidth = 0.8
             ctx.stroke()
           }
@@ -45,7 +45,7 @@ function NeuralBackground() {
       nodes.forEach(node => {
         ctx.beginPath()
         ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(124, 58, 237, 0.2)'
+        ctx.fillStyle = 'rgba(13, 148, 136, 0.2)'
         ctx.fill()
 
         node.x += node.vx
