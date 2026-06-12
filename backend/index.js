@@ -27,6 +27,42 @@ const anthropic = new Anthropic.default({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+async function inferSemanticConnections(concept) {
+  const brain = loadBrain();
+  const exploredConcepts = Object.entries(brain.concepts)
+    .filter(([name, data]) => name !== concept && data.encounteredAs.includes('main'))
+    .map(([name]) => name);
+
+  if (exploredConcepts.length === 0) return;
+
+  const message = await anthropic.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 200,
+    messages: [{
+      role: 'user',
+      content: `New concept: "${concept}"
+Previously explored concepts: ${exploredConcepts.join(', ')}
+
+Which of the previously explored concepts have a tight, direct conceptual relationship with "${concept}"? Only include concepts that are closely related — same domain, direct prerequisite, or direct extension. Exclude loose or tangential connections.
+
+Respond with JSON only: { "relatedConcepts": ["concept1", "concept2"] }
+If none are tightly related, return: { "relatedConcepts": [] }`,
+    }],
+  });
+
+  const parsed = JSON.parse(message.content[0].text);
+  if (!parsed.relatedConcepts || parsed.relatedConcepts.length === 0) return;
+
+  const freshBrain = loadBrain();
+  parsed.relatedConcepts.forEach(related => {
+    if (exploredConcepts.includes(related)) {
+      recordConnection(freshBrain, concept, related);
+      recordConnection(freshBrain, related, concept);
+    }
+  });
+  saveBrain(freshBrain);
+}
+
 app.post('/explore', async (req, res) => {
   const { concept, context, sessionId } = req.body;
 
@@ -106,6 +142,9 @@ Return only the JSON. No markdown, no extra text.`,
     saveBrain(brain);
 
     res.json({ ...parsed, sessionId: session.sessionId, nodeId: node.nodeId });
+
+    // Run semantic inference in background — frontend does not wait for this
+    inferSemanticConnections(concept).catch(err => console.error('Semantic inference failed:', err));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong calling Claude' });
@@ -185,6 +224,33 @@ Return only the JSON. No markdown, no extra text.`,
     res.status(500).json({ error: 'Something went wrong calling Claude' });
   }
 });
+
+app.get('/concept/:name', (req, res) => {
+  const name = decodeURIComponent(req.params.name)
+  const sessions = loadAllSessions()
+
+  let explanation = null
+  let realWorldExample = null
+  const followUps = []
+
+  for (const session of sessions) {
+    for (const node of session.nodes) {
+      if (node.concept.toLowerCase() === name.toLowerCase()) {
+        if (!explanation) {
+          explanation = node.explanation
+          realWorldExample = node.realWorldExample
+        }
+        followUps.push(...node.followUps)
+      }
+    }
+  }
+
+  if (!explanation) {
+    return res.status(404).json({ error: 'Concept not found' })
+  }
+
+  res.json({ concept: name, explanation, realWorldExample, followUps })
+})
 
 app.get('/sessions', (req, res) => {
   try {

@@ -52,9 +52,19 @@ Vite is not something you write code in. It works in the background. You mostly 
 | File | What it is |
 |---|---|
 | `frontend/src/main.jsx` | The entry point — where React starts and attaches to the browser page |
-| `frontend/src/App.jsx` | The root component — the top of the component tree |
+| `frontend/src/App.jsx` | The root component — holds all state, all logic, renders everything |
+| `frontend/src/NeuralBackground.jsx` | Animated neural-network canvas drawn in the background |
+| `frontend/src/TreeView.jsx` | Renders the current session as a vertical tree using `react-d3-tree` |
+| `frontend/src/LearningMap.jsx` | Renders the full cross-session learning map using `react-force-graph-2d` |
 | `frontend/index.html` | The single HTML page the whole app lives inside |
 | `frontend/package.json` | The list of packages the frontend needs |
+
+### Frontend packages installed
+
+| Package | What it does |
+|---|---|
+| `react-d3-tree` | Draws the current session as a hierarchical tree (parent → child layout) |
+| `react-force-graph-2d` | Draws the learning map as a force-directed graph (arbitrary connections between nodes) |
 
 ---
 
@@ -88,19 +98,64 @@ When the frontend sends data to `/explore`, Express knows to run that specific b
 
 | File | What it is |
 |---|---|
-| `backend/index.js` | The entire backend — loads config, starts the server, defines routes |
+| `backend/index.js` | The server — loads config, defines all routes, runs semantic inference |
+| `backend/storage.js` | All read/write logic for sessions and brain.json — never called directly by the frontend |
+| `backend/brain.json` | The persistent memory store — all concepts, connections, depth scores, learning gaps |
+| `backend/sessions/` | One JSON file per session — stores every node explored, its explanation, and follow-up questions |
 | `backend/package.json` | The list of packages the backend needs |
 
-### Packages installed
+### Backend packages installed
 
 | Package | What it does |
 |---|---|
 | `express` | The web server framework |
-| `dotenv` | Reads `.env` and makes `ANTHROPIC_API_KEY` available to the code |
-| `cors` | Allows the frontend (port 5173) to talk to the backend (port 3001) — browsers block cross-port requests by default |
+| `dotenv` | Reads `.env` and makes secrets available to the code |
+| `cors` | Allows the frontend (port 5173) to talk to the backend (port 3001) |
 | `@anthropic-ai/sdk` | Anthropic's official JavaScript library for calling Claude |
+| `@octokit/rest` | GitHub's official library — used to push session and brain files to GitHub on End Session |
+
+### Backend routes
+
+| Route | What it does |
+|---|---|
+| `POST /explore` | Main route — calls Claude Sonnet for explanation + branches, saves session node, updates brain, fires semantic inference in background |
+| `POST /followup` | Calls Claude for a follow-up answer, extracts concepts, saves to session node, updates brain as learning gap |
+| `POST /end-session` | Pushes the current session JSON and brain.json to GitHub via Octokit |
+| `GET /sessions` | Returns all saved sessions sorted newest first |
+| `GET /brain` | Returns the full brain.json |
+| `GET /concept/:name` | Looks up a concept across all sessions and returns its explanation + all follow-up questions |
 
 ---
+
+## The brain system
+
+`brain.json` is the app's long-term memory. It is updated on every exploration and follow-up question. It tracks:
+
+- **Every concept explored** — when first seen, how many times, which sessions it appeared in
+- **Depth score (0–1)** — calculated from: explored directly (0.4) + follow-up questions asked (0.15 each, capped at 0.4) + appeared in multiple sessions (0.2)
+- **How it was encountered** — `main` (directly explored), `branch` (suggested but not clicked), `followup-extracted` (surfaced in a question)
+- **Connections** — directional links between concepts the user navigated between, plus semantically inferred links (see below)
+- **Learning gaps** — concepts that came up in follow-up questions but were never directly explored
+- **Recommended next** — auto-generated list of 8 concepts worth exploring next, based on gaps and unseen branches
+
+Every time Claude is called, `buildBrainContext()` in `storage.js` turns `brain.json` into a plain-English summary that gets sent as the system prompt. This means Claude always knows what the learner already understands deeply, what they've only touched, and what their gaps are.
+
+## Semantic inference
+
+After every exploration, a background call to Claude Haiku runs (`inferSemanticConnections`). It asks: "which of the user's already-explored concepts are tightly related to this new one?" The response is used to draw edges in the learning map between concepts that are directly related — even if the user never navigated between them explicitly. This runs after `res.json()` so the user never waits for it.
+
+## The learning map vs the session tree
+
+There are two visualizations in the app — they serve different purposes:
+
+| | Session tree (`TreeView.jsx`) | Learning map (`LearningMap.jsx`) |
+|---|---|---|
+| What it shows | The path through the current session only | All concepts explored across all sessions |
+| Library | `react-d3-tree` | `react-force-graph-2d` |
+| Shape | Strict hierarchy — parent above children | Free-form graph — nodes float, connections are arbitrary |
+| Connections | Only navigation order (node 1 → 2 → 3) | Explicit navigation + semantic inference |
+| Appears when | During an active session (when result is showing) | On the home page (when no result is showing) |
+| Clickable | No | Yes — click to see explanation, real-world example, follow-up questions, and re-explore |
 
 ## How a node is born and what connects them
 

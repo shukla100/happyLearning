@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 import NeuralBackground from './NeuralBackground'
+import TreeView from './TreeView'
+import LearningMap from './LearningMap'
 
 function App() {
   const [input, setInput] = useState('')
@@ -16,15 +18,6 @@ function App() {
   const [nodeId, setNodeId] = useState(null)
   const [sessionSaving, setSessionSaving] = useState(false)
   const [sessionSaved, setSessionSaved] = useState(false)
-  const [pastSessions, setPastSessions] = useState([])
-  const [expandedSession, setExpandedSession] = useState(null)
-
-  useEffect(() => {
-    fetch('http://localhost:3001/sessions')
-      .then(r => r.json())
-      .then(data => setPastSessions(data))
-      .catch(() => {})
-  }, [])
 
   async function explore(concept, context = null, startNew = false) {
     setLoading(true)
@@ -114,12 +107,6 @@ function App() {
 
       setSessionSaved(true)
 
-      // Refresh past sessions list so the ended session appears immediately
-      fetch('http://localhost:3001/sessions')
-        .then(r => r.json())
-        .then(data => setPastSessions(data))
-        .catch(() => {})
-
       // Reset all session state after a short pause so user sees the confirmation
       setTimeout(() => {
         setResult(null)
@@ -197,57 +184,7 @@ function App() {
         </div>
       )}
 
-      {pastSessions.length > 0 && !result && (
-        <div className="past-sessions">
-          <h3 className="past-sessions-title">Past Sessions</h3>
-          <div className="past-sessions-list">
-            {pastSessions.map(session => (
-              <div key={session.sessionId} className="past-session-item">
-                <button
-                  className="past-session-header"
-                  onClick={() => setExpandedSession(
-                    expandedSession === session.sessionId ? null : session.sessionId
-                  )}
-                >
-                  <div className="past-session-meta">
-                    <span className="past-session-concept">{session.startingConcept}</span>
-                    <span className="past-session-info">
-                      {session.nodes.length} {session.nodes.length === 1 ? 'concept' : 'concepts'} · {new Date(session.startedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
-                  </div>
-                  <span className="past-session-chevron">
-                    {expandedSession === session.sessionId ? '▲' : '▼'}
-                  </span>
-                </button>
-
-                {expandedSession === session.sessionId && (
-                  <div className="past-session-path">
-                    {session.nodes.map((node, i) => (
-                      <div key={node.nodeId} className="past-session-node">
-                        <span className="past-session-node-index">{i + 1}</span>
-                        <div className="past-session-node-content">
-                          <span className="past-session-node-concept">{node.concept}</span>
-                          {node.followUps.length > 0 && (
-                            <span className="past-session-node-followups">
-                              {node.followUps.length} follow-up {node.followUps.length === 1 ? 'question' : 'questions'}
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          className="past-session-reexplore"
-                          onClick={() => explore(node.concept, null, true)}
-                        >
-                          Explore again
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {!result && <LearningMap onExplore={explore} />}
 
       {result && (
         <div className="result">
@@ -307,6 +244,10 @@ function App() {
               </button>
             </form>
           </div>
+
+          {history.length > 1 && (
+            <TreeView concepts={history} />
+          )}
 
           <div className="branches">
             <p className="branches-label">Where do you want to go next?</p>

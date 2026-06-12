@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-`happyLearning` is a personal AI-powered learning tool. The user types a concept, gets an expert explanation from Claude, and sees 4-6 branching related concepts to explore next. The app builds a visual tree of the exploration session in real time. Sessions are persisted and connected across future sessions. Users can export the full tree as a markdown file and commit it to the repo.
+`happyLearning` is a personal AI-powered learning tool. The user types a concept, gets an expert explanation from Claude with a real-world example, and sees 5 branching related concepts to explore next. The app builds a visual tree of the current session and a persistent learning map across all sessions. Sessions and a brain.json memory file are backed up to GitHub. The brain accumulates knowledge over time — depth scores, learning gaps, and connections — and feeds back into every Claude response so explanations build on what the user already knows.
 
 As decisions are made (with user question and approval), add them to this file under the relevant section.
 
@@ -13,10 +13,12 @@ As decisions are made (with user question and approval), add them to this file u
 | Layer | Choice |
 |---|---|
 | Frontend | React + Vite |
-| Tree visualization | `react-d3-tree` |
+| Session tree visualization | `react-d3-tree` |
+| Learning map visualization | `react-force-graph-2d` |
 | Backend | Node.js with Express |
-| Persistence | JSON files (local) |
-| AI | Claude API (Anthropic) |
+| Persistence | JSON files (local) — sessions + brain.json |
+| GitHub backup | `@octokit/rest` |
+| AI | Claude API (Anthropic) — Sonnet for explanations, Haiku for semantic inference |
 
 ## Language Decision (decided 2026-06-05)
 
