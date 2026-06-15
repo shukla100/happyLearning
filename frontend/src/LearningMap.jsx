@@ -42,7 +42,7 @@ export default function LearningMap({ onExplore }) {
   useEffect(() => {
     if (graphData.nodes.length === 0) return
     const timer = setTimeout(() => {
-      graphRef.current?.zoom(0.5, 0)
+      graphRef.current?.zoom(0.7, 0)
     }, 600)
     return () => clearTimeout(timer)
   }, [graphData])
