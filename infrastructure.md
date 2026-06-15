@@ -169,13 +169,39 @@ Two things do NOT create a new node: the follow-up question box calls `POST /fol
 
 ## Environment & Secrets
 
-**Location:** `happyLearning/.env`
+**Local backend:** `happyLearning/.env` — stores `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, and `GITHUB_SESSIONS_REPO`. Never committed to git.
 
-Stores the Anthropic API key. This file is listed in `.gitignore` and will never be committed to git. The backend loads it on startup via `dotenv`.
+**Local frontend:** `frontend/.env.local` — stores `VITE_API_URL=http://localhost:3001`. Never committed to git. Vite reads this at build/dev time and makes it available in code as `import.meta.env.VITE_API_URL`. Any variable that starts with `VITE_` is exposed to the browser — anything else is invisible to the frontend.
 
-```
-ANTHROPIC_API_KEY=your_key_here
-```
+**Deployed backend (Render):** Same variables set directly in the Render dashboard as environment variables. `VITE_API_URL` is set to `https://happylearning-api.onrender.com`.
+
+---
+
+## Seed data
+
+Because the deployed backend (Render) has an ephemeral disk that resets after ~15 minutes of idle, `brain.json` and sessions would vanish on every cold start. Two seed files solve this:
+
+| File | What it is |
+|---|---|
+| `backend/brain.seed.json` | 20 developer-centric concepts with connections, depth scores, and learning gaps |
+| `backend/sessions.seed/` | 3 session JSON files with full explanations, real-world examples, and follow-up Q&As for all 20 concepts |
+
+On startup, `storage.js` checks if `brain.json` is missing → copies `brain.seed.json`. It also checks if `sessions/` is empty → copies all files from `sessions.seed/`. Local use is unaffected because local files already exist and the copy logic is never triggered.
+
+---
+
+## Deployment
+
+The app is deployed for portfolio visibility:
+
+| Layer | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://happy-learning-product.vercel.app |
+| Backend | Render (free tier) | https://happylearning-api.onrender.com |
+
+Vercel does not auto-deploy on push — a manual redeploy is required after each frontend change. Render redeploys automatically on push to main.
+
+**Render free tier limitation:** The backend sleeps after ~15 minutes of inactivity. First request after idle takes up to 30 seconds to respond (cold start). On wake-up, brain.json and sessions are repopulated from seed files.
 
 ---
 

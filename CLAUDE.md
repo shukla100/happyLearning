@@ -37,6 +37,30 @@ JavaScript is used for both frontend and backend.
 
  Every time code is written, all technical concepts, decisions, and jargon must be explained clearly for a non-technical audience. Do not assume prior knowledge of React, JavaScript frameworks, or backend concepts. Explain the why, not just the what.
 
+## Deployment (decided 2026-06-15)
+
+| Layer | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://happy-learning-product.vercel.app |
+| Backend | Render (free tier) | https://happylearning-api.onrender.com |
+
+Vercel auto-deploys are not wired up — manual redeploy required after each push. Render free tier has ephemeral disk (resets after ~15 min idle) — brain.json and sessions are repopulated from seed files on cold start.
+
+**Environment variables:**
+- Local backend: `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `GITHUB_SESSIONS_REPO` in `.env` (gitignored)
+- Local frontend: `VITE_API_URL=http://localhost:3001` in `frontend/.env.local` (gitignored)
+- Render: same backend vars set as environment variables in Render dashboard
+- Vercel: `VITE_API_URL=https://happylearning-api.onrender.com` set in Vercel dashboard
+
+## Seed data (decided 2026-06-15)
+
+The deployed site pre-populates with demo data so the learning map and node panels are immediately usable by portfolio visitors.
+
+- `backend/brain.seed.json` — 20 developer-centric concepts with connections and depth scores
+- `backend/sessions.seed/` — 3 session files with full explanations, real-world examples, and follow-up Q&As for all 20 concepts
+- `backend/storage.js` copies these into `brain.json` and `sessions/` on startup if those are empty (Render cold start)
+- Local use is unaffected — local files already exist so the copy is never triggered
+
 ## Working on Windows
 
 This project runs on Windows 11 with PowerShell as the primary shell. Use PowerShell syntax in all commands (e.g. `$env:VAR`, backtick for line continuation, `;` not `&&` for chaining).
