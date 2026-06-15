@@ -41,8 +41,14 @@ export default function LearningMap({ onExplore }) {
 
   useEffect(() => {
     if (graphData.nodes.length === 0) return
-    const t1 = setTimeout(() => graphRef.current?.zoomToFit(400, 40), 500)
-    const t2 = setTimeout(() => graphRef.current?.zoomToFit(400, 40), 1200)
+    const t1 = setTimeout(() => {
+      graphRef.current?.zoom(0.4, 0)
+      graphRef.current?.zoomToFit(0, 80)
+    }, 600)
+    const t2 = setTimeout(() => {
+      graphRef.current?.zoom(0.4, 0)
+      graphRef.current?.zoomToFit(0, 80)
+    }, 1500)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [graphData])
 
