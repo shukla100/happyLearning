@@ -2,6 +2,19 @@
   margin-top: 40px;
 }
 
+.map-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.map-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
 .map-layout {
   display: flex;
   gap: 20px;

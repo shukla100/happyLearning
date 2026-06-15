@@ -75,7 +75,10 @@ export default function LearningMap({ onExplore }) {
 
   return (
     <div className="learning-map">
-      <p className="section-label">Your learning map</p>
+      <div className="map-header">
+        <p className="section-label">Your learning map</p>
+        <p className="map-hint">Click any node to see your learning for that topic</p>
+      </div>
       <div className="map-layout">
         <div className="map-canvas" ref={containerRef}>
           <ForceGraph2D
