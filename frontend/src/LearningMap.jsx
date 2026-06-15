@@ -30,17 +30,20 @@ export default function LearningMap({ onExplore }) {
   }, [])
 
   useEffect(() => {
-    if (containerRef.current) {
-      setCanvasWidth(containerRef.current.getBoundingClientRect().width)
-    }
+    if (!containerRef.current) return
+    const observer = new ResizeObserver(entries => {
+      const width = entries[0].contentRect.width
+      if (width > 0) setCanvasWidth(width)
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
     if (graphData.nodes.length === 0) return
-    const timer = setTimeout(() => {
-      graphRef.current?.zoomToFit(400, 40)
-    }, 300)
-    return () => clearTimeout(timer)
+    const t1 = setTimeout(() => graphRef.current?.zoomToFit(400, 40), 500)
+    const t2 = setTimeout(() => graphRef.current?.zoomToFit(400, 40), 1200)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [graphData])
 
   async function handleNodeClick(node) {
