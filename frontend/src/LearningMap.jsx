@@ -11,7 +11,7 @@ export default function LearningMap({ onExplore }) {
   const [canvasWidth, setCanvasWidth] = useState(800)
 
   useEffect(() => {
-    fetch('http://localhost:3001/brain')
+    fetch(`${import.meta.env.VITE_API_URL}/brain`)
       .then(r => r.json())
       .then(brain => {
         const exploredNodes = Object.entries(brain.concepts)
@@ -45,7 +45,7 @@ export default function LearningMap({ onExplore }) {
     setConceptDetail(null)
 
     try {
-      const res = await fetch(`http://localhost:3001/concept/${encodeURIComponent(node.id)}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/concept/${encodeURIComponent(node.id)}`)
       const data = await res.json()
       setConceptDetail(data)
     } catch {

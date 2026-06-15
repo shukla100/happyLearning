@@ -28,7 +28,7 @@ function App() {
     setConnectInput('')
 
     try {
-      const response = await fetch('http://localhost:3001/explore', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/explore`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ concept, context, sessionId: startNew ? null : sessionId }),
@@ -63,7 +63,7 @@ function App() {
     setFollowUpAnswer(null)
 
     try {
-      const response = await fetch('http://localhost:3001/followup', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/followup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -97,7 +97,7 @@ function App() {
     setSessionSaving(true)
 
     try {
-      const response = await fetch('http://localhost:3001/end-session', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/end-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
