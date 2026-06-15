@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 
 export default function LearningMap({ onExplore }) {
@@ -8,6 +8,14 @@ export default function LearningMap({ onExplore }) {
   const [detailLoading, setDetailLoading] = useState(false)
   const containerRef = useRef(null)
   const graphRef = useRef(null)
+
+  const initGraph = useCallback((instance) => {
+    graphRef.current = instance
+    if (instance) {
+      const charge = instance.d3Force('charge')
+      if (charge) charge.strength(-80)
+    }
+  }, [])
   const [canvasWidth, setCanvasWidth] = useState(800)
 
   useEffect(() => {
@@ -41,15 +49,10 @@ export default function LearningMap({ onExplore }) {
 
   useEffect(() => {
     if (graphData.nodes.length === 0) return
-    const init = setTimeout(() => {
-      if (!graphRef.current) return
-      graphRef.current.d3Force('charge').strength(-80)
-      graphRef.current.d3ReheatSimulation()
-    }, 100)
-    const zoom = setTimeout(() => {
+    const timer = setTimeout(() => {
       graphRef.current?.zoomToFit(400, 60)
-    }, 3000)
-    return () => { clearTimeout(init); clearTimeout(zoom) }
+    }, 600)
+    return () => clearTimeout(timer)
   }, [graphData])
 
   async function handleNodeClick(node) {
@@ -76,12 +79,12 @@ export default function LearningMap({ onExplore }) {
       <div className="map-layout">
         <div className="map-canvas" ref={containerRef}>
           <ForceGraph2D
-            ref={graphRef}
+            ref={initGraph}
             graphData={graphData}
             width={canvasWidth}
             height={480}
-            warmupTicks={50}
-            cooldownTime={2500}
+            warmupTicks={300}
+            cooldownTicks={0}
             nodeLabel="id"
             linkColor={() => '#5eead4'}
             linkWidth={1.5}
