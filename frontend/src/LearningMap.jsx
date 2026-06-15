@@ -41,10 +41,15 @@ export default function LearningMap({ onExplore }) {
 
   useEffect(() => {
     if (graphData.nodes.length === 0) return
-    const timer = setTimeout(() => {
-      graphRef.current?.zoom(0.7, 0)
-    }, 600)
-    return () => clearTimeout(timer)
+    const init = setTimeout(() => {
+      if (!graphRef.current) return
+      graphRef.current.d3Force('charge').strength(-200)
+      graphRef.current.d3ReheatSimulation()
+    }, 100)
+    const zoom = setTimeout(() => {
+      graphRef.current?.zoom(1.0, 400)
+    }, 3000)
+    return () => { clearTimeout(init); clearTimeout(zoom) }
   }, [graphData])
 
   async function handleNodeClick(node) {
@@ -75,8 +80,8 @@ export default function LearningMap({ onExplore }) {
             graphData={graphData}
             width={canvasWidth}
             height={480}
-            warmupTicks={300}
-            cooldownTicks={0}
+            warmupTicks={50}
+            cooldownTime={2500}
             nodeLabel="id"
             linkColor={() => '#5eead4'}
             linkWidth={1.5}
