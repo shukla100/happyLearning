@@ -1,0 +1,162 @@
+{
+  "sessionId": "session_1748793600000",
+  "startedAt": "2026-06-01T10:00:00.000Z",
+  "startingConcept": "OAuth 2.0",
+  "nodes": [
+    {
+      "nodeId": "node_1748793600000_aa001",
+      "concept": "OAuth 2.0",
+      "exploredAt": "2026-06-01T10:00:00.000Z",
+      "explanation": "OAuth 2.0 is an authorization framework that lets a third-party app access resources on your behalf without ever seeing your password. You've used it every time you clicked 'Sign in with Google' — Google hands the app a scoped token that says 'this user allowed you to read their profile', not the password itself. The key mental model: it's a valet key, not a master key. The four flows (Authorization Code, Client Credentials, Implicit, Device) cover every combination of who is asking and whether a human is present.",
+      "realWorldExample": "Slack uses OAuth 2.0 when you connect GitHub to a Slack channel. GitHub never gives Slack your credentials — it issues a scoped access token. That token lets Slack post PR notifications but can't push code or delete repos. When you revoke Slack's access in GitHub settings, the token is invalidated instantly across every integration.",
+      "branches": [
+        { "id": "1", "label": "JWT", "reason": "OAuth 2.0 access tokens are almost always JWTs — understanding the token format unlocks how auth actually works at the wire level" },
+        { "id": "2", "label": "PKCE", "reason": "The security extension that makes Authorization Code flow safe for public clients like mobile apps" },
+        { "id": "3", "label": "SAML", "reason": "The enterprise predecessor to OAuth — most large orgs use both and you need to know when each applies" },
+        { "id": "4", "label": "Refresh tokens", "reason": "How long-lived sessions work without forcing re-login every hour" },
+        { "id": "5", "label": "Scopes", "reason": "The mechanism that enforces least-privilege — what a token is actually allowed to do" }
+      ],
+      "followUps": [
+        {
+          "question": "what is the difference between an access token and a refresh token?",
+          "answer": "An access token is the short-lived key you use to call a protected API — typically expires in 15 minutes to an hour. A refresh token is the longer-lived credential (days or months) that you exchange for a new access token when the old one expires, without making the user log in again. The split exists for security: if an access token leaks, the damage window is tiny. The refresh token lives only in secure server-side storage, never in the browser.",
+          "extractedConcepts": ["refresh token", "token expiry"],
+          "askedAt": "2026-06-01T10:10:00.000Z"
+        },
+        {
+          "question": "how does the authorization code flow work step by step?",
+          "answer": "Your app redirects the user to the auth server with a client_id and requested scopes. The user logs in and consents. The auth server redirects back to your app with a one-time authorization code in the URL. Your server then exchanges that code — plus a client_secret — for the actual access token, server-to-server, never in the browser. The code in the URL is useless alone because only your server knows the client_secret needed to complete the exchange.",
+          "extractedConcepts": ["authorization code", "client secret"],
+          "askedAt": "2026-06-01T10:15:00.000Z"
+        }
+      ],
+      "nextConcept": "JWT"
+    },
+    {
+      "nodeId": "node_1748793660000_aa002",
+      "concept": "JWT",
+      "exploredAt": "2026-06-01T10:20:00.000Z",
+      "explanation": "JSON Web Tokens are self-contained credentials — everything needed to verify the claim is inside the token itself. The token is three base64-encoded parts separated by dots: header (signing algorithm), payload (claims like user ID, email, expiry), and signature (proves the token wasn't tampered with). The server signs it with a secret key — anyone can decode and read the payload, but only the server can verify the signature. This is why you never put passwords or sensitive data in a JWT payload: they're encoded, not encrypted.",
+      "realWorldExample": "When you log into an Anthropic API dashboard, the server issues a JWT containing your user ID and expiry time. Every API request sends this JWT in the Authorization header. The API server verifies the signature in microseconds without hitting a database — it just checks the signature math. This is why JWTs scale: no session lookup, no database round-trip per request.",
+      "branches": [
+        { "id": "1", "label": "RS256 vs HS256", "reason": "The two main signing algorithms — asymmetric vs symmetric — and why it matters for microservices" },
+        { "id": "2", "label": "Token storage", "reason": "localStorage vs HttpOnly cookies is one of the most debated security decisions in web auth" },
+        { "id": "3", "label": "JWT expiry and rotation", "reason": "How you handle token refresh without forcing users to re-login" },
+        { "id": "4", "label": "OAuth 2.0", "reason": "JWT is the token format; OAuth is the protocol that issues it — they're commonly confused" },
+        { "id": "5", "label": "JWE (JSON Web Encryption)", "reason": "The encrypted counterpart to JWT when the payload itself needs to be private" }
+      ],
+      "followUps": [
+        {
+          "question": "where does the JWT get stored on the client side?",
+          "answer": "Two options, both with tradeoffs. localStorage is easy to access from JavaScript but vulnerable to XSS — any malicious script on your page can steal it. HttpOnly cookies can't be read by JavaScript at all, making them XSS-proof, but require CSRF protection. Most modern apps use HttpOnly cookies for access tokens and handle CSRF with SameSite=Strict or double-submit cookie patterns.",
+          "extractedConcepts": ["XSS", "CSRF", "HttpOnly cookies"],
+          "askedAt": "2026-06-01T10:30:00.000Z"
+        },
+        {
+          "question": "what happens if someone steals your JWT?",
+          "answer": "JWTs are stateless bearer tokens — whoever holds one can use it. If stolen, the attacker has full access until expiry, which is why short expiry windows (15-60 minutes) are critical. Unlike session tokens, you can't invalidate a JWT server-side without building a blocklist, which defeats the stateless advantage. The defense strategy: short-lived access tokens plus refresh token rotation so stolen tokens expire quickly.",
+          "extractedConcepts": ["token theft", "bearer token", "token revocation"],
+          "askedAt": "2026-06-01T10:35:00.000Z"
+        }
+      ],
+      "nextConcept": "Docker"
+    },
+    {
+      "nodeId": "node_1748793720000_aa003",
+      "concept": "Docker",
+      "exploredAt": "2026-06-01T14:00:00.000Z",
+      "explanation": "Docker packages your app and all its dependencies into a portable container that runs identically everywhere. A container is not a VM — it shares the host OS kernel but isolates the filesystem, processes, and network. You define the container's contents in a Dockerfile: which base image to start from, what packages to install, which files to copy in, and what command to run on startup. The result is an image that you can run anywhere Docker is installed — dev laptop, CI pipeline, or prod server — with zero 'works on my machine' problems.",
+      "realWorldExample": "Netflix uses Docker containers for every microservice in their streaming platform. When the recommendation service team ships a new model, they build a Docker image containing the model weights, inference code, and exact Python version. That image goes through CI, gets pushed to their container registry, and rolls out to thousands of instances in production — all running identical environments. No dependency drift, no environment-specific bugs.",
+      "branches": [
+        { "id": "1", "label": "Docker Compose", "reason": "How you run multi-container apps (app + database + cache) locally with a single command" },
+        { "id": "2", "label": "Container registries", "reason": "Where Docker images live — Docker Hub, ECR, GCR — and how deployments pull them" },
+        { "id": "3", "label": "Kubernetes", "reason": "The orchestration layer that runs Docker containers at scale in production" },
+        { "id": "4", "label": "CVEs in Docker images", "reason": "How known vulnerabilities in base images and packages get tracked and patched" },
+        { "id": "5", "label": "Multi-stage builds", "reason": "How to keep production images small by separating build-time from runtime dependencies" }
+      ],
+      "followUps": [
+        {
+          "question": "what is the difference between a container and a virtual machine?",
+          "answer": "A VM virtualizes the entire hardware stack — each one runs a full OS kernel, meaning gigabytes of overhead and seconds to boot. A container shares the host's OS kernel and only packages the app's code and dependencies, so it starts in milliseconds and costs megabytes. The tradeoff: VMs give stronger isolation (separate kernel = stronger security boundary), containers give density and speed. Kubernetes often runs containers inside VMs to get both.",
+          "extractedConcepts": ["virtualization", "OS kernel", "container isolation"],
+          "askedAt": "2026-06-01T14:15:00.000Z"
+        },
+        {
+          "question": "how do layers in a Docker image work?",
+          "answer": "Every instruction in a Dockerfile creates an immutable layer. Layers are content-addressed and cached — if a layer hasn't changed, Docker reuses the cached version. This is why instruction order matters: put COPY package.json and RUN npm install before COPY . so your dependency layer only rebuilds when package.json changes, not every time you change a source file. Layers are shared across images too — 10 containers using the same node:20 base only store that base layer once on disk.",
+          "extractedConcepts": ["image layers", "layer caching", "Dockerfile optimization"],
+          "askedAt": "2026-06-01T14:20:00.000Z"
+        }
+      ],
+      "nextConcept": "GitHub Actions"
+    },
+    {
+      "nodeId": "node_1748793780000_aa004",
+      "concept": "GitHub Actions",
+      "exploredAt": "2026-06-01T14:45:00.000Z",
+      "explanation": "GitHub Actions is GitHub's built-in CI/CD platform — you define automated workflows that trigger on events like a push, pull request, or a schedule. Workflows live in .github/workflows/ as YAML files. Each workflow has jobs, each job has steps, and steps either run shell commands or call pre-built Actions from the GitHub Marketplace. The power is composability: lint → test → build → push Docker image → deploy to ECS, all in one file, each step gated on the previous one passing.",
+      "realWorldExample": "Vercel's own engineering team uses GitHub Actions to validate every PR. On push, a workflow runs TypeScript type checks, Jest unit tests, and an end-to-end Playwright suite in parallel across three runners. Only when all three pass does the PR get a green checkmark and become mergeable. Failed tests post inline annotations directly on the PR diff pointing to the exact line that broke.",
+      "branches": [
+        { "id": "1", "label": "GitHub Actions secrets", "reason": "How you inject API keys and credentials into CI workflows without hardcoding them" },
+        { "id": "2", "label": "Reusable workflows", "reason": "How to DRY up CI config by sharing workflow definitions across multiple repos" },
+        { "id": "3", "label": "Self-hosted runners", "reason": "When and why you'd run Actions on your own servers instead of GitHub's hosted runners" },
+        { "id": "4", "label": "Docker in CI", "reason": "Building and pushing Docker images as part of your deployment pipeline" },
+        { "id": "5", "label": "Terraform in CI", "reason": "Running infrastructure changes automatically on merge to main" }
+      ],
+      "followUps": [
+        {
+          "question": "what is a runner in GitHub Actions and where does it run?",
+          "answer": "A runner is the machine that actually executes your workflow steps. GitHub provides hosted runners (ubuntu-latest, windows-latest, macos-latest) — fresh VMs spun up for each job and discarded after. You can also self-host runners on your own servers for jobs that need private network access or specialized hardware. Each step in a job runs sequentially on the same runner; separate jobs can run in parallel across multiple runners.",
+          "extractedConcepts": ["CI/CD", "self-hosted runner", "parallel jobs"],
+          "askedAt": "2026-06-01T14:55:00.000Z"
+        }
+      ],
+      "nextConcept": "CVEs"
+    },
+    {
+      "nodeId": "node_1748793840000_aa005",
+      "concept": "CVEs",
+      "exploredAt": "2026-06-01T15:30:00.000Z",
+      "explanation": "CVE stands for Common Vulnerabilities and Exposures — a public catalog of known security flaws in software. Every entry gets a unique ID (e.g., CVE-2021-44228 is Log4Shell), a description of what's exploitable and how, and a CVSS severity score from 0 to 10. When you run a vulnerability scanner on your code or Docker image, it's cross-referencing your installed packages against this database. The uncomfortable reality: most apps carry CVEs in transitive dependencies — packages your packages depend on — that you didn't choose and may not even know exist.",
+      "realWorldExample": "In 2021, the Log4Shell vulnerability (CVE-2021-44228) hit virtually every Java application because log4j was a near-universal logging dependency. Security teams at companies like Apple, Amazon, and Cloudflare had hours to audit thousands of services, identify which ones used log4j, and patch or mitigate. Teams that had automated CVE scanning in their CI pipelines could answer 'are we affected?' in minutes. Teams without it spent days manually grepping dependency trees.",
+      "branches": [
+        { "id": "1", "label": "CVSS scoring", "reason": "Understanding the 0-10 scale so you can triage which CVEs actually matter in your context" },
+        { "id": "2", "label": "Trivy and Snyk", "reason": "The main open-source and commercial tools for scanning Docker images and code dependencies" },
+        { "id": "3", "label": "Dependency pinning", "reason": "How locking dependency versions helps you control when you absorb upstream CVE fixes" },
+        { "id": "4", "label": "Software Bill of Materials (SBOM)", "reason": "The inventory document that lets you answer 'do we use the vulnerable package?' instantly" },
+        { "id": "5", "label": "Zero-day vulnerabilities", "reason": "CVEs that are exploited before a fix exists — the highest-severity category" }
+      ],
+      "followUps": [
+        {
+          "question": "how do you check what CVEs are in a Docker image?",
+          "answer": "The standard tools are Trivy (open source, fast, CLI or CI plugin) and Snyk (commercial, deep GitHub integration). You run trivy image your-image:tag and it scans every layer's installed packages against the CVE database. In CI you'd fail the build on any Critical severity CVEs. The catch: CVEs in base OS packages often can't be patched until the base image maintainer releases an update — which is why keeping base images current is a continuous ops task, not a one-time fix.",
+          "extractedConcepts": ["Trivy", "vulnerability scanning", "base image"],
+          "askedAt": "2026-06-01T15:40:00.000Z"
+        },
+        {
+          "question": "what does the CVSS score actually measure?",
+          "answer": "CVSS (Common Vulnerability Scoring System) scores 0-10 based on three dimensions: Base (how inherently bad is it — network exploitable? No auth required? Full system takeover?), Temporal (is there an active exploit in the wild?), and Environmental (how much does this matter in your specific setup?). A CVSS 9.8 in a package you never execute might matter less than a 6.5 in code that runs on every request. Use the score as a triage starting point, not a mandate.",
+          "extractedConcepts": ["CVSS", "vulnerability triage", "risk scoring"],
+          "askedAt": "2026-06-01T15:45:00.000Z"
+        }
+      ],
+      "nextConcept": "Node.js"
+    },
+    {
+      "nodeId": "node_1748793900000_aa006",
+      "concept": "Node.js",
+      "exploredAt": "2026-06-01T16:00:00.000Z",
+      "explanation": "Node.js is a JavaScript runtime built on Chrome's V8 engine that lets you run JavaScript on a server, not just in the browser. Its defining feature is the event loop: rather than spawning a thread per request (expensive), Node handles I/O operations asynchronously — it registers a callback, moves on to the next request, and comes back when the I/O completes. This makes Node excellent for API servers and real-time apps that handle many concurrent connections, but poor for CPU-heavy work (a long computation blocks the event loop for all other requests).",
+      "realWorldExample": "LinkedIn rebuilt their mobile server backend from Ruby on Rails to Node.js and went from 30 servers to 3 while handling the same traffic. The win was Node's ability to handle thousands of simultaneous connections that were mostly waiting on database or API responses — exactly the I/O-bound workload it's optimized for. CPU-bound tasks like video encoding they kept on separate services.",
+      "branches": [
+        { "id": "1", "label": "npm and package.json", "reason": "Node's package ecosystem and how dependencies are managed — including where CVEs hide" },
+        { "id": "2", "label": "Express.js", "reason": "The most common framework for building HTTP servers in Node" },
+        { "id": "3", "label": "Event loop deep dive", "reason": "Understanding the call stack, callback queue, and microtask queue unlocks async debugging" },
+        { "id": "4", "label": "Next.js", "reason": "The React framework built on Node that adds server-side rendering and API routes" },
+        { "id": "5", "label": "Node.js CVEs", "reason": "The Node runtime itself ships CVEs — knowing how to track and patch them is an ops concern" }
+      ],
+      "followUps": [],
+      "nextConcept": null
+    }
+  ]
+}

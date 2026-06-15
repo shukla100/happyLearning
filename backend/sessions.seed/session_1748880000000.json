@@ -1,0 +1,153 @@
+{
+  "sessionId": "session_1748880000000",
+  "startedAt": "2026-06-02T09:00:00.000Z",
+  "startingConcept": "SAML",
+  "nodes": [
+    {
+      "nodeId": "node_1748880000000_bb001",
+      "concept": "SAML",
+      "exploredAt": "2026-06-02T09:00:00.000Z",
+      "explanation": "SAML (Security Assertion Markup Language) is an XML-based protocol for enterprise single sign-on. The flow: your company's Identity Provider (IdP — usually Okta or Entra ID) authenticates the user, then sends a digitally-signed XML assertion to the service provider (the app you're trying to access) saying 'this user is who they say they are and has these attributes'. The service provider trusts the assertion because it trusts the IdP's signature. You log into Okta once and get access to Salesforce, Workday, and GitHub Enterprise without entering a password again.",
+      "realWorldExample": "When a new Shopify employee logs into their company's internal tools dashboard, they're redirected to Okta (the IdP). Okta verifies their credentials and AD group membership, then posts a SAML assertion back to each internal tool. The tools never see the password — they just verify Okta's signature on the assertion and check which groups the user belongs to for authorization. Offboarding an employee in Okta instantly revokes their access to all connected apps.",
+      "branches": [
+        { "id": "1", "label": "OAuth 2.0", "reason": "The modern API-first alternative to SAML — understanding both tells you when to use each" },
+        { "id": "2", "label": "Entra AD groups", "reason": "SAML assertions carry group membership from Entra ID which is how app-level authorization works" },
+        { "id": "3", "label": "Okta", "reason": "The most common identity provider for SAML-based enterprise SSO" },
+        { "id": "4", "label": "OIDC (OpenID Connect)", "reason": "The OAuth 2.0 extension that adds identity to authorization — the modern SAML replacement for many use cases" },
+        { "id": "5", "label": "SP-initiated vs IdP-initiated SSO", "reason": "The two SAML flows and the security differences between them" }
+      ],
+      "followUps": [
+        {
+          "question": "why do enterprises still use SAML instead of OAuth?",
+          "answer": "SAML was built specifically for enterprise SSO in the early 2000s and is deeply embedded in on-premise identity systems like Active Directory. It's XML-based, browser-redirect-based, and has a rich assertion model that enterprises standardized their entire IAM infrastructure on. Migrating to OAuth/OIDC requires rebuilding identity pipelines that have been running for 20 years and are connected to HR systems, compliance tools, and legacy apps. Most large orgs now run both — SAML for legacy internal apps, OAuth for modern APIs and cloud services.",
+          "extractedConcepts": ["SSO", "identity provider", "legacy auth"],
+          "askedAt": "2026-06-02T09:20:00.000Z"
+        }
+      ],
+      "nextConcept": "Entra AD groups"
+    },
+    {
+      "nodeId": "node_1748880060000_bb002",
+      "concept": "Entra AD groups",
+      "exploredAt": "2026-06-02T09:45:00.000Z",
+      "explanation": "Microsoft Entra ID (formerly Azure Active Directory) groups are collections of users that you assign permissions to in bulk. Instead of granting access per-user, you say 'everyone in the SecurityTeam group can access the prod database' — add someone to the group and they get access instantly; remove them and it's revoked everywhere simultaneously. Groups are the fundamental unit of enterprise access control: they're what SAML assertions carry, what Conditional Access policies target, and what Azure RBAC role assignments bind to. Every enterprise permission decision flows through group membership.",
+      "realWorldExample": "At Microsoft, when an engineer joins the Azure Compute team, an IT admin adds them to the AzureComputeEngineers Entra group. That single action grants access to the team's GitHub repos (via GitHub's SAML integration), their Azure subscription resources (via RBAC), their internal deployment pipelines, and their oncall tooling. Offboarding is one remove-from-group operation that cascades revocations across every connected system.",
+      "branches": [
+        { "id": "1", "label": "RBAC (Role-Based Access Control)", "reason": "The permission model built on top of group membership — what groups are actually authorized to do" },
+        { "id": "2", "label": "Conditional Access policies", "reason": "Entra rules that enforce MFA, device compliance, or IP restrictions on top of group membership" },
+        { "id": "3", "label": "Service principals", "reason": "The non-human equivalent of a user in Entra — what your apps and automation authenticate as" },
+        { "id": "4", "label": "OBO security", "reason": "How services act on behalf of a specific user's identity rather than their own service account" },
+        { "id": "5", "label": "Just-in-time access", "reason": "Privileged Identity Management — granting elevated access temporarily, not permanently" }
+      ],
+      "followUps": [],
+      "nextConcept": "Secrets Manager"
+    },
+    {
+      "nodeId": "node_1748880120000_bb003",
+      "concept": "Secrets Manager",
+      "exploredAt": "2026-06-02T11:00:00.000Z",
+      "explanation": "AWS Secrets Manager is a centralized store for sensitive configuration — API keys, database passwords, OAuth credentials — encrypted at rest and accessed via API. Your app fetches the secret at runtime by calling the SDK with the secret's name; no plaintext secret ever touches the code or a config file. The killer feature over environment variables: automatic rotation. You configure Secrets Manager to rotate your RDS password on a schedule, it updates the database and the stored secret atomically, and your app picks up the new value on the next fetch — zero downtime, zero redeploys.",
+      "realWorldExample": "Stripe's internal services use a secrets management system to handle API keys for payment processor integrations. When a processor rotates their API key (which happens on security incidents), the rotation lambda updates the secret in the store and all services automatically start using the new key on their next call. Before centralized secrets management, a key rotation meant finding every hardcoded or env-var instance across dozens of services and coordinating a synchronized deploy — a multi-hour incident response.",
+      "branches": [
+        { "id": "1", "label": "HashiCorp Vault", "reason": "The open-source alternative to AWS Secrets Manager — cloud-agnostic and more configurable" },
+        { "id": "2", "label": "IAM roles and permissions", "reason": "What controls which services are allowed to fetch which secrets" },
+        { "id": "3", "label": "Secret rotation lambdas", "reason": "The automation that actually rotates database credentials and updates the secret value" },
+        { "id": "4", "label": "Environment variables", "reason": "The simpler alternative — and why Secrets Manager is worth the extra complexity in production" },
+        { "id": "5", "label": "KMS (Key Management Service)", "reason": "The encryption layer underneath Secrets Manager — where the actual cryptographic keys live" }
+      ],
+      "followUps": [
+        {
+          "question": "how is AWS Secrets Manager different from just using environment variables?",
+          "answer": "Environment variables are fine for dev but have three production problems: they're often baked into deployment configs that end up in version control, rotating them requires a full redeploy, and there's no audit trail of who accessed what. Secrets Manager stores secrets encrypted at rest, rotates them automatically on a schedule, logs every access to CloudTrail, and lets you scope access per service via IAM. Your app calls the SDK at runtime — no restart needed when a secret rotates.",
+          "extractedConcepts": ["secret rotation", "IAM", "audit trail"],
+          "askedAt": "2026-06-02T11:20:00.000Z"
+        }
+      ],
+      "nextConcept": "Environment variables"
+    },
+    {
+      "nodeId": "node_1748880180000_bb004",
+      "concept": "Environment variables",
+      "exploredAt": "2026-06-02T11:20:00.000Z",
+      "explanation": "Environment variables are key-value pairs that exist in a process's runtime environment, outside the code itself. They're how you configure an app differently across environments without changing code: DATABASE_URL points to localhost in dev and to the RDS instance in prod. In Node.js you access them as process.env.DATABASE_URL. The golden rule: never hardcode credentials in source code — inject them via environment variables. The practical limit: env vars baked into Docker images or deployment manifests can still end up in version control, which is why production secrets belong in a dedicated secrets manager, not .env files.",
+      "realWorldExample": "Vercel's platform is essentially an environment variable management system with a deployment engine attached. When you set OPENAI_API_KEY in your Vercel dashboard, Vercel injects it as an environment variable into your serverless function's process at runtime. The key never touches your source code, never appears in your git history, and Vercel encrypts it at rest. Different values for preview vs production deployments are managed through Vercel's environment scoping UI.",
+      "branches": [
+        { "id": "1", "label": "dotenv and .env files", "reason": "The local development pattern for environment variables — and why .env must always be in .gitignore" },
+        { "id": "2", "label": "Secrets Manager", "reason": "The production-grade alternative when you need rotation, auditing, and centralized access control" },
+        { "id": "3", "label": "12-factor app methodology", "reason": "The architectural pattern that codified 'config in environment, not code' as a best practice" },
+        { "id": "4", "label": "Kubernetes secrets", "reason": "How env vars are injected into containers in a Kubernetes cluster" },
+        { "id": "5", "label": "VITE_API_URL pattern", "reason": "How frontend frameworks like Vite expose env vars to browser code at build time" }
+      ],
+      "followUps": [],
+      "nextConcept": "Terraform modules"
+    },
+    {
+      "nodeId": "node_1748880240000_bb005",
+      "concept": "Terraform modules",
+      "exploredAt": "2026-06-02T13:00:00.000Z",
+      "explanation": "Terraform is infrastructure-as-code: you define cloud resources in .tf files and Terraform provisions and manages them via cloud provider APIs. Modules are reusable, parameterized units of infrastructure — think of them as functions that create cloud resources. Instead of copy-pasting 50 lines of S3 bucket config across 12 services, you write a module once (with variables for bucket name, access policy, encryption settings) and call it with different parameters everywhere. This is how platform teams enforce standards: 'use the approved S3 module' ensures every bucket gets encryption, tagging, and access logging without trusting every team to remember.",
+      "realWorldExample": "Airbnb's infrastructure team maintains a Terraform module library. The ECS service module encodes 200 lines of task definition, auto-scaling policy, ALB target group, and CloudWatch alarm config that every team needs. When the security team mandates that all services must enable VPC flow logs, they update the module once — and the change propagates to every service using it on their next terraform apply. Without modules, that would be 40 manual PRs across 40 service repositories.",
+      "branches": [
+        { "id": "1", "label": "Terraform state", "reason": "How Terraform tracks what it's deployed — and why remote state in S3 is essential for team use" },
+        { "id": "2", "label": "Terraform workspaces", "reason": "How you manage dev/staging/prod environments with the same Terraform config" },
+        { "id": "3", "label": "Terragrunt", "reason": "The wrapper that adds DRY patterns and dependency management on top of Terraform" },
+        { "id": "4", "label": "S3 buckets", "reason": "One of the most common resources managed by Terraform modules — storage with complex access policies" },
+        { "id": "5", "label": "GitHub Actions + Terraform", "reason": "Running terraform plan and apply automatically on PR merge" }
+      ],
+      "followUps": [],
+      "nextConcept": "S3 buckets"
+    },
+    {
+      "nodeId": "node_1748880300000_bb006",
+      "concept": "S3 buckets",
+      "exploredAt": "2026-06-02T13:30:00.000Z",
+      "explanation": "S3 (Simple Storage Service) is AWS's object storage — you store files (called objects) in named containers (buckets). Each object is addressed by a key (its path), and you retrieve it via that key or a pre-signed URL. Unlike a database, there's no schema — store images, logs, ML training data, deployment artifacts, backups, anything. S3 is effectively infinitely scalable and cheap per GB, which is why it's the answer to most 'where do I put this file?' questions on AWS. The key limitation: object storage means no partial updates — you read or write entire objects, not lines or offsets.",
+      "realWorldExample": "Dropbox's entire file storage layer originally ran on S3 — billions of user files, each an S3 object. When a user uploads a file, Dropbox writes it to S3 and stores the S3 key in their database. When you share a link, Dropbox generates a time-limited pre-signed S3 URL that lets the recipient download directly from S3 without going through Dropbox's servers. Dropbox later built their own distributed storage system (Magic Pocket) for cost reasons, but S3 is still used for edge cases.",
+      "branches": [
+        { "id": "1", "label": "IAM policies and bucket policies", "reason": "The two-layer permission system that controls who can read or write to a bucket" },
+        { "id": "2", "label": "Pre-signed URLs", "reason": "How you grant temporary, scoped access to a private S3 object without making the bucket public" },
+        { "id": "3", "label": "S3 event notifications", "reason": "Triggering Lambda functions when objects are uploaded — the backbone of serverless data pipelines" },
+        { "id": "4", "label": "CloudFront + S3", "reason": "How you serve static assets globally with low latency by putting a CDN in front of S3" },
+        { "id": "5", "label": "S3 versioning and lifecycle policies", "reason": "Keeping object history and automatically archiving or deleting old versions to control cost" }
+      ],
+      "followUps": [
+        {
+          "question": "what is the difference between a public and private S3 bucket?",
+          "answer": "By default all S3 buckets are private — only the AWS account that owns them can access the objects. A public bucket allows anyone on the internet to read (or write, if badly misconfigured) the objects. The infamous S3 data breaches at Capital One and dozens of others were almost always misconfigured buckets exposed to the public by mistake. AWS now blocks all public access at the account level by default. You access private buckets from your app using IAM role credentials, never by making the bucket itself public.",
+          "extractedConcepts": ["bucket policy", "public access block", "IAM"],
+          "askedAt": "2026-06-02T13:45:00.000Z"
+        }
+      ],
+      "nextConcept": "MCP server"
+    },
+    {
+      "nodeId": "node_1748880360000_bb007",
+      "concept": "MCP server",
+      "exploredAt": "2026-06-02T16:00:00.000Z",
+      "explanation": "MCP (Model Context Protocol) is Anthropic's open standard for connecting AI agents to external tools and data sources. An MCP server is the service that exposes tools via this protocol — it advertises what it can do (list files, query a database, call an API) and the AI client discovers and calls those tools at runtime. The key difference from a regular API: MCP is self-describing. The server tells the agent what tools exist, what they accept, and what they return — the agent never needs hardcoded knowledge of the API. One agent can work with any MCP server without code changes.",
+      "realWorldExample": "Anthropic ships Claude Desktop with a filesystem MCP server. When you enable it, Claude can read, write, and list files on your local machine. Claude doesn't have built-in file access — it discovers the filesystem tools at startup via the MCP protocol, then calls them as needed during a conversation. You can point Claude at a custom MCP server you built and it immediately gains those capabilities, with no change to Claude itself.",
+      "branches": [
+        { "id": "1", "label": "MCP gateways", "reason": "A single control point that routes agent requests to multiple MCP servers — the enterprise pattern" },
+        { "id": "2", "label": "Function calling", "reason": "The LLM capability that MCP is built on — how models decide when and how to invoke tools" },
+        { "id": "3", "label": "MCP vs REST APIs", "reason": "Why self-describing protocols matter for AI agents — and when REST is still the right choice" },
+        { "id": "4", "label": "Agentic harness", "reason": "The infrastructure that orchestrates agents using MCP tools across multi-step tasks" },
+        { "id": "5", "label": "OAuth for MCP", "reason": "How you secure an MCP server so not just any agent can call your tools" }
+      ],
+      "followUps": [
+        {
+          "question": "what is the difference between MCP and a regular REST API?",
+          "answer": "A REST API is designed for humans (or hardcoded clients) — you read the docs, learn the endpoints and parameters, and write integration code. MCP is designed for AI agents — on connection, the server sends a full schema describing every tool: name, description, input parameters with types and constraints. The agent passes this schema to the LLM, which decides which tools to call and generates valid arguments on its own. No hardcoded integration, no glue code — the schema IS the integration.",
+          "extractedConcepts": ["tool discovery", "schema", "agent integration"],
+          "askedAt": "2026-06-02T16:20:00.000Z"
+        },
+        {
+          "question": "how does an AI agent discover what tools an MCP server exposes?",
+          "answer": "On connection, the MCP client sends a tools/list request and the server responds with a JSON manifest describing every available tool — name, description, input parameters with types, and output format. The agent's framework passes this manifest to the LLM as part of its context. The LLM reads the descriptions and decides which tools to call based on the current task, generating correctly-typed arguments by following the schema. The whole process is dynamic — add a new tool to the server and every connected agent can use it immediately.",
+          "extractedConcepts": ["tools/list", "tool manifest", "dynamic capability"],
+          "askedAt": "2026-06-02T16:25:00.000Z"
+        }
+      ],
+      "nextConcept": null
+    }
+  ]
+}

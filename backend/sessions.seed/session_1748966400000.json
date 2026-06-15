@@ -1,0 +1,187 @@
+{
+  "sessionId": "session_1748966400000",
+  "startedAt": "2026-06-04T14:00:00.000Z",
+  "startingConcept": "OAuth 2.0",
+  "nodes": [
+    {
+      "nodeId": "node_1748966400000_cc001",
+      "concept": "OAuth 2.0",
+      "exploredAt": "2026-06-04T14:00:00.000Z",
+      "explanation": "Revisiting OAuth 2.0 through the lens of service-to-service auth. When it's a human logging in, the Authorization Code flow handles it. But when your backend service needs to call another API without a human present, you use Client Credentials flow — the service authenticates with its own client_id and client_secret, gets an access token scoped to what it's allowed to do, and calls the API. This is how microservices authenticate to each other and how CI systems authenticate to cloud providers. The mental model shifts from 'user delegating access' to 'machine proving its identity'.",
+      "realWorldExample": "When GitHub Actions deploys to AWS, it doesn't use a human's credentials. GitHub uses OIDC — it presents a signed token to AWS's STS service, which exchanges it for temporary AWS credentials scoped to exactly what that workflow is allowed to do. No long-lived API keys stored anywhere. AWS trusts GitHub's OIDC token because GitHub and AWS have a pre-configured trust relationship. This is OAuth Client Credentials flow at the infrastructure layer.",
+      "branches": [
+        { "id": "1", "label": "OBO security", "reason": "The OAuth extension for delegating access on a per-user basis through a service chain" },
+        { "id": "2", "label": "OIDC in CI/CD", "reason": "How GitHub Actions and other CI systems authenticate to cloud providers without stored secrets" },
+        { "id": "3", "label": "Client Credentials flow", "reason": "The OAuth flow for machine-to-machine auth — no human in the loop" },
+        { "id": "4", "label": "Token introspection", "reason": "How a resource server validates a token it receives without calling the auth server every time" },
+        { "id": "5", "label": "MCP gateways auth", "reason": "How OAuth is applied to secure AI agent tool access" }
+      ],
+      "followUps": [],
+      "nextConcept": "OBO security"
+    },
+    {
+      "nodeId": "node_1748966460000_cc002",
+      "concept": "OBO security",
+      "exploredAt": "2026-06-04T15:00:00.000Z",
+      "explanation": "On-Behalf-Of (OBO) is a Microsoft Entra / Azure AD OAuth extension for multi-tier service architectures. The problem it solves: your API gets a user's access token, but needs to call a downstream service (like Microsoft Graph) as that user — not as your service account. OBO lets your API exchange the user's incoming token for a new token scoped to the downstream service, preserving the user's identity through the call chain. Every downstream service sees 'this request is on behalf of User X' and enforces that user's actual permissions, not blanket service-account permissions.",
+      "realWorldExample": "An internal analytics dashboard at a Microsoft partner calls the company's custom API, which in turn calls Microsoft Graph to fetch the user's SharePoint files. Without OBO, the API would use a service account with access to everyone's files — a massive privilege escalation. With OBO, the API exchanges the user's token for a Graph-scoped token tied to that specific user. The Graph API returns only that user's files, enforcing their permissions even though the API is the one making the call.",
+      "branches": [
+        { "id": "1", "label": "OAuth 2.0 token exchange", "reason": "The RFC 8693 standard that OBO is built on — how tokens get exchanged between services" },
+        { "id": "2", "label": "Entra AD groups", "reason": "OBO preserves group membership through the call chain — downstream services see the same groups" },
+        { "id": "3", "label": "Microsoft Graph API", "reason": "The most common downstream target for OBO flows in Microsoft-centric enterprises" },
+        { "id": "4", "label": "Least privilege principle", "reason": "OBO is a mechanism for enforcing least privilege across multi-service architectures" },
+        { "id": "5", "label": "Service principal permissions", "reason": "How you configure what your API is allowed to call downstream in the OBO flow" }
+      ],
+      "followUps": [],
+      "nextConcept": "Docker"
+    },
+    {
+      "nodeId": "node_1748966520000_cc003",
+      "concept": "Docker",
+      "exploredAt": "2026-06-04T10:00:00.000Z",
+      "explanation": "Second pass on Docker — focusing on the production ops side. In development, Docker eliminates environment inconsistency. In production, the concern shifts to security and efficiency. Key practices: use distroless or minimal base images (fewer packages = fewer CVE surface area), run containers as non-root users, never store secrets in image layers (they're readable in layer history), use multi-stage builds to exclude build tools from the final image, and pin base image versions so you don't absorb unexpected upstream changes. A well-constructed Dockerfile is a security document as much as a build script.",
+      "realWorldExample": "Google's internal container infrastructure runs on distroless base images — Docker images containing only the application runtime and its direct dependencies, with no shell, no package manager, no debugging tools. If an attacker exploits a vulnerability in a container, they land in an environment with nothing useful to move laterally. The tradeoff is harder debugging — you can't shell into the container — but Google accepts that for production workloads and uses separate debugging sidecar containers when needed.",
+      "branches": [
+        { "id": "1", "label": "Distroless images", "reason": "Minimal base images that dramatically reduce CVE exposure in production containers" },
+        { "id": "2", "label": "ECS instances", "reason": "How Docker containers get scheduled and run at scale on AWS infrastructure" },
+        { "id": "3", "label": "Container scanning in CI", "reason": "Automatically checking Docker images for CVEs before they reach production" },
+        { "id": "4", "label": "Watchtower", "reason": "The tool that automatically updates running Docker containers when new images are available" },
+        { "id": "5", "label": "Multi-stage Dockerfiles", "reason": "Keeping production images lean by separating build-time and runtime environments" }
+      ],
+      "followUps": [],
+      "nextConcept": "ECS instances"
+    },
+    {
+      "nodeId": "node_1748966580000_cc004",
+      "concept": "ECS instances",
+      "exploredAt": "2026-06-04T10:30:00.000Z",
+      "explanation": "ECS (Elastic Container Service) is AWS's managed service for running Docker containers in production. You define a Task Definition (which container image, how much CPU and RAM, which ports to expose, which secrets to inject) and ECS schedules it across a cluster. With Fargate (serverless ECS), you don't manage any EC2 instances — AWS provisions the underlying compute invisibly and you pay per vCPU-second your task actually uses. ECS handles health checks, restarts failed containers, and integrates with ALB for load balancing and with IAM for per-task credentials.",
+      "realWorldExample": "Duolingo runs their entire backend on ECS Fargate. Each language learning microservice is a separate ECS service with its own task definition, auto-scaling policy, and IAM role. When a new version ships, ECS performs a rolling deployment — starting new task instances before draining old ones — with zero downtime. The 'instances' in the name are misleading for Fargate: there are no EC2 instances to manage, patch, or worry about. AWS handles the infrastructure; you only define what runs on it.",
+      "branches": [
+        { "id": "1", "label": "ECS vs Kubernetes", "reason": "The two dominant container orchestrators on AWS and when you'd choose each" },
+        { "id": "2", "label": "Fargate vs EC2 launch type", "reason": "Serverless vs self-managed compute for ECS — the cost and control tradeoff" },
+        { "id": "3", "label": "ECS task IAM roles", "reason": "How containers get AWS credentials scoped to exactly what that task needs" },
+        { "id": "4", "label": "ALB and ECS service discovery", "reason": "How traffic reaches the right container in an ECS cluster" },
+        { "id": "5", "label": "ECS auto-scaling", "reason": "How ECS scales task count based on CPU, memory, or custom CloudWatch metrics" }
+      ],
+      "followUps": [],
+      "nextConcept": "MCP server"
+    },
+    {
+      "nodeId": "node_1748966640000_cc005",
+      "concept": "MCP server",
+      "exploredAt": "2026-06-04T16:00:00.000Z",
+      "explanation": "Second pass on MCP — focusing on building one. An MCP server is a process that speaks the MCP protocol over stdin/stdout (local) or HTTP+SSE (remote). You define tools as functions with typed input schemas. The MCP SDK (available for TypeScript and Python) handles the protocol layer — you just write the tool logic. A minimal MCP server can be 30 lines: import the SDK, define a tool with its name, description, and input schema, implement the handler function, and start the server. The description is critical — it's what the LLM reads to decide when and how to use the tool.",
+      "realWorldExample": "Cloudflare built an MCP server for their Workers KV API. Any AI agent connected to it can list KV namespaces, read and write keys, and query usage stats — without any Cloudflare-specific code in the agent. When a developer asks Claude 'show me all keys in my prod namespace that start with user:', Claude calls the MCP server's list-keys tool with the right parameters, the server calls the KV API, and Claude presents the results. The developer wrote zero integration code.",
+      "branches": [
+        { "id": "1", "label": "MCP gateways", "reason": "Running multiple MCP servers behind a single endpoint — the production deployment pattern" },
+        { "id": "2", "label": "MCP tool design", "reason": "How to write tool descriptions that LLMs actually understand and use correctly" },
+        { "id": "3", "label": "Hosting MCP in AWS", "reason": "Deploying a remote MCP server to ECS or Lambda and making it accessible to agents" },
+        { "id": "4", "label": "MCP authentication", "reason": "Securing your MCP server so only authorized agents can call your tools" },
+        { "id": "5", "label": "Agentic harness", "reason": "The orchestration layer that connects agents to MCP servers across complex multi-step tasks" }
+      ],
+      "followUps": [],
+      "nextConcept": "MCP gateways"
+    },
+    {
+      "nodeId": "node_1748966700000_cc006",
+      "concept": "MCP gateways",
+      "exploredAt": "2026-06-04T16:30:00.000Z",
+      "explanation": "An MCP gateway is a reverse proxy for AI tools — it sits between AI agents and multiple MCP servers, presenting a single endpoint to agents while routing requests to the appropriate backend server. The enterprise value: centralized auth (agents authenticate once to the gateway, not separately to each tool server), observability (every tool call is logged and traceable), rate limiting, and access control (which agents can call which tools). Instead of managing 20 MCP server connections per agent deployment, you manage one gateway connection and let the gateway route tool calls to the right server.",
+      "realWorldExample": "A fintech company running 15 internal MCP servers (one each for their trading API, risk engine, compliance checker, customer data platform, etc.) deploys an MCP gateway in front of them. Their AI assistant authenticates to the gateway with an OAuth token. The gateway maps the assistant's identity to what tools it's allowed to call, routes each tool request to the right backend server, and logs every call with the user identity for compliance. Adding a new MCP server means registering it with the gateway — no changes to the agent.",
+      "branches": [
+        { "id": "1", "label": "LLM gateways", "reason": "The analogous pattern for AI model access — a gateway in front of multiple LLM providers" },
+        { "id": "2", "label": "Proxy servers", "reason": "MCP gateways are a specialized proxy — understanding general proxy architecture explains the pattern" },
+        { "id": "3", "label": "OAuth for MCP", "reason": "How agents authenticate to the gateway and how the gateway authenticates to downstream servers" },
+        { "id": "4", "label": "Tool access control", "reason": "How you configure which agents are allowed to call which tools through the gateway" },
+        { "id": "5", "label": "Hosting MCP in AWS", "reason": "How an MCP gateway and its backend servers get deployed in cloud infrastructure" }
+      ],
+      "followUps": [
+        {
+          "question": "how does an MCP gateway handle auth between the agent and the downstream servers?",
+          "answer": "The agent authenticates to the gateway with its own credentials (usually an OAuth bearer token). The gateway verifies this token and looks up which downstream servers and tools that identity is allowed to access. For each downstream MCP server, the gateway maintains its own credentials — service account tokens, API keys, or OAuth client credentials. When the agent calls a tool, the gateway strips the agent's token, substitutes the appropriate downstream credential, and forwards the request. The downstream server sees the gateway, not the agent, and the agent never touches backend credentials.",
+          "extractedConcepts": ["auth delegation", "token forwarding", "credential isolation"],
+          "askedAt": "2026-06-04T16:45:00.000Z"
+        }
+      ],
+      "nextConcept": "LLM gateways"
+    },
+    {
+      "nodeId": "node_1748966760000_cc007",
+      "concept": "LLM gateways",
+      "exploredAt": "2026-06-04T17:00:00.000Z",
+      "explanation": "An LLM gateway sits in front of multiple language model providers and gives your application a single, standardized endpoint. It handles routing (send long contexts to models with larger windows, send fast tasks to cheaper models), failover (if Anthropic is down, route to Azure OpenAI), cost controls (per-team budget limits), caching (identical prompts return cached responses, dramatically cutting costs on repeated queries), and a full audit log of every LLM call. In an enterprise, the AI platform team owns and operates the gateway; every product team routes through it without managing provider API keys themselves.",
+      "realWorldExample": "Uber's internal LLM platform routes all AI calls through a gateway they call their 'model hub'. When a team wants to use Claude for summarization, they call the model hub endpoint — the hub picks the right model and provider based on cost, latency, and capability requirements, handles retry on rate limits, and logs the call with team and cost attribution. Switching from OpenAI to Anthropic for a use case is a config change in the hub, not a code change across 40 team repos.",
+      "branches": [
+        { "id": "1", "label": "MCP gateways", "reason": "The tool-access equivalent — same gateway pattern applied to AI tool servers instead of AI models" },
+        { "id": "2", "label": "Inference frameworks", "reason": "The runtimes that LLM gateways often route to for self-hosted model serving" },
+        { "id": "3", "label": "Prompt caching", "reason": "How gateways cache LLM responses to cut costs on repeated identical prompts" },
+        { "id": "4", "label": "Semantic caching", "reason": "Caching based on meaning similarity, not exact string match — a more sophisticated gateway feature" },
+        { "id": "5", "label": "Rate limiting and quotas", "reason": "How gateways enforce per-team usage limits without exposing raw provider rate limits" }
+      ],
+      "followUps": [],
+      "nextConcept": "Agentic harness"
+    },
+    {
+      "nodeId": "node_1748966820000_cc008",
+      "concept": "Agentic harness",
+      "exploredAt": "2026-06-04T17:30:00.000Z",
+      "explanation": "An agentic harness is the infrastructure layer that turns a raw LLM into an autonomous agent capable of multi-step reasoning and action. It manages the agent loop (plan → call tool → observe result → plan again), connects the LLM to tools via MCP or function calling, handles memory (short-term in the context window, long-term via vector stores or structured databases), runs guardrails and safety checks, evaluates output quality, and orchestrates multiple specialized agents working in parallel. Production harnesses also handle retry logic, cost tracking, and observability — you need to know exactly what an agent did and why.",
+      "realWorldExample": "Anthropic's own internal harness for Claude Code uses a large mix of techniques: RAG to retrieve relevant code context, multiple models at different tiers (fast/cheap for classification, powerful/expensive for generation), guardrails that reject unsafe tool calls, short-term memory in the conversation window, long-term memory in a vector store of past sessions, and offline agentic loops that propose system improvements without human intervention. Each of those is a separate harness component, not a feature of the LLM itself.",
+      "branches": [
+        { "id": "1", "label": "RAG", "reason": "Retrieval-Augmented Generation — how agents access knowledge that doesn't fit in their context window" },
+        { "id": "2", "label": "Agent memory patterns", "reason": "The three types of memory (in-context, vector, structured) and when to use each" },
+        { "id": "3", "label": "Multi-agent orchestration", "reason": "Coordinating specialized agents in parallel — fan-out, synthesis, adversarial verification" },
+        { "id": "4", "label": "Guardrails and evals", "reason": "How you prevent agents from taking harmful actions and measure whether they're working correctly" },
+        { "id": "5", "label": "Inference frameworks", "reason": "The runtimes that actually serve the LLMs your harness calls" }
+      ],
+      "followUps": [
+        {
+          "question": "what is the difference between RAG and fine-tuning in an agentic system?",
+          "answer": "RAG fetches relevant documents at query time and puts them in the context window — the model's weights are unchanged, you're just giving it better inputs. Fine-tuning updates the model's actual weights on your data, teaching it new behavior patterns or style. In agentic systems, RAG is almost always preferred for knowledge (fast to update, no training cost, fully auditable) while fine-tuning is reserved for behavior changes — making the model better at following a specific output format or reasoning style that prompting alone can't reliably achieve.",
+          "extractedConcepts": ["RAG", "fine-tuning", "model weights"],
+          "askedAt": "2026-06-04T17:45:00.000Z"
+        },
+        {
+          "question": "how do you handle long-term memory in a running agent?",
+          "answer": "Three main patterns, usually combined. Vector stores embed facts as dense vectors and retrieve semantically relevant ones at query time — this is RAG applied to memory. Structured stores extract entities and relationships into a database the agent queries explicitly (SQL or graph). Episodic memory stores summaries of past sessions that get retrieved and injected at the start of new conversations. Most production agents use all three: vector for general knowledge, structured for application state, episodic for user context and preferences.",
+          "extractedConcepts": ["vector store", "episodic memory", "semantic retrieval"],
+          "askedAt": "2026-06-04T17:50:00.000Z"
+        }
+      ],
+      "nextConcept": "Inference frameworks"
+    },
+    {
+      "nodeId": "node_1748966880000_cc009",
+      "concept": "Inference frameworks",
+      "exploredAt": "2026-06-04T18:00:00.000Z",
+      "explanation": "Inference frameworks (vLLM, Ollama, SGLang) are optimized runtimes for serving language models in production. A raw model file (HuggingFace weights, GGUF, etc.) isn't directly efficient to serve — these frameworks handle continuous batching (processing tokens from multiple concurrent requests simultaneously on the same GPU pass, dramatically improving throughput), KV cache management, quantization (compressing weights for speed and memory), and exposing an OpenAI-compatible API so existing code works without modification. The difference between a naive serving setup and vLLM can be 10-30x higher throughput on the same hardware.",
+      "realWorldExample": "Mistral AI serves their open-weight models via vLLM in production. A single A100 GPU running vLLM with continuous batching handles hundreds of concurrent API requests that would overwhelm a naive 'one request at a time' serving setup. Ollama takes the opposite approach — it's optimized for running models locally on developer machines, handling quantization and model management with a simple CLI and local API. SGLang specializes in structured output and multi-call workflows where you need the model to produce typed JSON reliably across many parallel requests.",
+      "branches": [
+        { "id": "1", "label": "vLLM", "reason": "The performance benchmark for production LLM serving — PagedAttention and continuous batching" },
+        { "id": "2", "label": "Ollama", "reason": "The dead-simple local inference option — one command to run any open-weight model" },
+        { "id": "3", "label": "GPU economics", "reason": "Why inference hardware costs dominate LLM deployment budgets and how to optimize" },
+        { "id": "4", "label": "Quantization", "reason": "Trading a small quality loss for dramatically smaller model size and faster inference" },
+        { "id": "5", "label": "LLM gateways", "reason": "How inference frameworks slot into enterprise AI infrastructure behind a gateway layer" }
+      ],
+      "followUps": [],
+      "nextConcept": "Proxy servers"
+    },
+    {
+      "nodeId": "node_1748966940000_cc010",
+      "concept": "Proxy servers",
+      "exploredAt": "2026-06-04T17:15:00.000Z",
+      "explanation": "A proxy server sits between clients and servers, intercepting and forwarding requests. Forward proxies represent clients — they're what corporate networks use to filter and log outbound traffic, and what VPNs essentially are. Reverse proxies represent servers — nginx, Caddy, and Cloudflare are reverse proxies that receive traffic on behalf of your backend. Reverse proxies are where SSL termination, load balancing, rate limiting, caching, and request routing live. In AI infrastructure, the proxy pattern shows up as LLM gateways (in front of model providers) and MCP gateways (in front of tool servers) — a single control point that adds auth, observability, and routing without changing the upstream services.",
+      "realWorldExample": "Cloudflare is the world's largest reverse proxy fleet — when you visit a Cloudflare-protected site, your request hits a Cloudflare edge server first, which terminates TLS, checks rate limits and WAF rules, looks up the cached response, and only forwards to the origin server if necessary. The origin server never sees your IP directly. This proxy layer handles DDoS mitigation, performance optimization, and security without any changes to the origin application. The same architectural pattern at smaller scale is what most companies run with nginx or Caddy in front of their app servers.",
+      "branches": [
+        { "id": "1", "label": "nginx configuration", "reason": "The most common reverse proxy in production — understanding its config unlocks most deployment setups" },
+        { "id": "2", "label": "LLM gateways", "reason": "A specialized reverse proxy pattern for AI model traffic" },
+        { "id": "3", "label": "MCP gateways", "reason": "A specialized proxy for AI tool server traffic" },
+        { "id": "4", "label": "mTLS", "reason": "Mutual TLS — how proxies enforce that both sides of a connection are authenticated" },
+        { "id": "5", "label": "Service mesh", "reason": "The Kubernetes-native evolution of the proxy pattern — a sidecar proxy on every service" }
+      ],
+      "followUps": [],
+      "nextConcept": null
+    }
+  ]
+}
