@@ -3,17 +3,22 @@ const path = require('path');
 
 const SESSIONS_DIR = path.join(__dirname, 'sessions');
 const BRAIN_FILE = path.join(__dirname, 'brain.json');
+const SEED_FILE = path.join(__dirname, 'brain.seed.json');
 
-// Create sessions folder and brain.json if they don't exist (e.g. fresh clone)
+// Create sessions folder and brain.json if they don't exist (e.g. fresh clone or Render cold start)
 if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR);
 if (!fs.existsSync(BRAIN_FILE)) {
-  fs.writeFileSync(BRAIN_FILE, JSON.stringify({
-    lastUpdated: null,
-    concepts: {},
-    connections: [],
-    learningGaps: [],
-    recommendedNext: [],
-  }, null, 2));
+  if (fs.existsSync(SEED_FILE)) {
+    fs.copyFileSync(SEED_FILE, BRAIN_FILE);
+  } else {
+    fs.writeFileSync(BRAIN_FILE, JSON.stringify({
+      lastUpdated: null,
+      concepts: {},
+      connections: [],
+      learningGaps: [],
+      recommendedNext: [],
+    }, null, 2));
+  }
 }
 
 // ─── Session helpers ────────────────────────────────────────────────────────

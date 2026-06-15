@@ -1,0 +1,295 @@
+{
+  "lastUpdated": "2026-06-10T18:23:41.000Z",
+  "concepts": {
+    "OAuth 2.0": {
+      "firstEncountered": "2026-06-01T10:00:00.000Z",
+      "lastEncountered": "2026-06-04T14:30:00.000Z",
+      "timesExplored": 2,
+      "followUpQuestions": [
+        "what is the difference between an access token and a refresh token?",
+        "how does the authorization code flow work step by step?"
+      ],
+      "extractedConcepts": ["JWT", "refresh token"],
+      "depthScore": 0.9,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000", "session_1748966400000"]
+    },
+    "JWT": {
+      "firstEncountered": "2026-06-01T10:15:00.000Z",
+      "lastEncountered": "2026-06-01T10:45:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "where does the JWT get stored on the client side?",
+        "what happens if someone steals your JWT?"
+      ],
+      "extractedConcepts": ["localStorage", "XSS"],
+      "depthScore": 0.7,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000"]
+    },
+    "SAML": {
+      "firstEncountered": "2026-06-02T09:00:00.000Z",
+      "lastEncountered": "2026-06-02T09:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "why do enterprises still use SAML instead of OAuth?"
+      ],
+      "extractedConcepts": ["SSO", "enterprise auth"],
+      "depthScore": 0.55,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000"]
+    },
+    "Entra AD groups": {
+      "firstEncountered": "2026-06-02T09:45:00.000Z",
+      "lastEncountered": "2026-06-02T09:45:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000"]
+    },
+    "OBO security": {
+      "firstEncountered": "2026-06-04T15:00:00.000Z",
+      "lastEncountered": "2026-06-04T15:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "Secrets Manager": {
+      "firstEncountered": "2026-06-02T11:00:00.000Z",
+      "lastEncountered": "2026-06-04T11:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "how is AWS Secrets Manager different from just using environment variables?"
+      ],
+      "extractedConcepts": ["environment variables", "IAM"],
+      "depthScore": 0.75,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000", "session_1748966400000"]
+    },
+    "Environment variables": {
+      "firstEncountered": "2026-06-02T11:20:00.000Z",
+      "lastEncountered": "2026-06-02T11:20:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000"]
+    },
+    "Docker": {
+      "firstEncountered": "2026-06-01T14:00:00.000Z",
+      "lastEncountered": "2026-06-04T10:00:00.000Z",
+      "timesExplored": 2,
+      "followUpQuestions": [
+        "what is the difference between a container and a virtual machine?",
+        "how do layers in a Docker image work?"
+      ],
+      "extractedConcepts": ["container", "virtual machine", "image layers"],
+      "depthScore": 0.9,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000", "session_1748966400000"]
+    },
+    "GitHub Actions": {
+      "firstEncountered": "2026-06-01T14:45:00.000Z",
+      "lastEncountered": "2026-06-01T14:45:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "what is a runner in GitHub Actions and where does it run?"
+      ],
+      "extractedConcepts": ["CI/CD", "runner"],
+      "depthScore": 0.55,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000"]
+    },
+    "Terraform modules": {
+      "firstEncountered": "2026-06-02T13:00:00.000Z",
+      "lastEncountered": "2026-06-02T13:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000"]
+    },
+    "S3 buckets": {
+      "firstEncountered": "2026-06-02T13:30:00.000Z",
+      "lastEncountered": "2026-06-02T13:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "what is the difference between a public and private S3 bucket?"
+      ],
+      "extractedConcepts": ["IAM", "bucket policy"],
+      "depthScore": 0.55,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000"]
+    },
+    "ECS instances": {
+      "firstEncountered": "2026-06-04T10:30:00.000Z",
+      "lastEncountered": "2026-06-04T10:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "CVEs": {
+      "firstEncountered": "2026-06-01T15:30:00.000Z",
+      "lastEncountered": "2026-06-01T15:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "how do you check what CVEs are in a Docker image?",
+        "what does the CVSS score actually measure?"
+      ],
+      "extractedConcepts": ["vulnerability scanning", "CVSS"],
+      "depthScore": 0.7,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000"]
+    },
+    "Node.js": {
+      "firstEncountered": "2026-06-01T16:00:00.000Z",
+      "lastEncountered": "2026-06-01T16:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748793600000"]
+    },
+    "MCP server": {
+      "firstEncountered": "2026-06-02T16:00:00.000Z",
+      "lastEncountered": "2026-06-04T16:00:00.000Z",
+      "timesExplored": 2,
+      "followUpQuestions": [
+        "what is the difference between MCP and a regular REST API?",
+        "how does an AI agent discover what tools an MCP server exposes?"
+      ],
+      "extractedConcepts": ["tool discovery", "AI agent"],
+      "depthScore": 0.9,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748880000000", "session_1748966400000"]
+    },
+    "MCP gateways": {
+      "firstEncountered": "2026-06-04T16:30:00.000Z",
+      "lastEncountered": "2026-06-04T16:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "how does an MCP gateway handle auth between the agent and the downstream servers?"
+      ],
+      "extractedConcepts": ["auth delegation", "token forwarding"],
+      "depthScore": 0.55,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "LLM gateways": {
+      "firstEncountered": "2026-06-04T17:00:00.000Z",
+      "lastEncountered": "2026-06-04T17:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "Agentic harness": {
+      "firstEncountered": "2026-06-04T17:30:00.000Z",
+      "lastEncountered": "2026-06-04T17:30:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [
+        "what is the difference between RAG and fine-tuning in an agentic system?",
+        "how do you handle long-term memory in a running agent?"
+      ],
+      "extractedConcepts": ["RAG", "fine-tuning", "agent memory"],
+      "depthScore": 0.7,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "Inference frameworks": {
+      "firstEncountered": "2026-06-04T18:00:00.000Z",
+      "lastEncountered": "2026-06-04T18:00:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    },
+    "Proxy servers": {
+      "firstEncountered": "2026-06-04T17:15:00.000Z",
+      "lastEncountered": "2026-06-04T17:15:00.000Z",
+      "timesExplored": 1,
+      "followUpQuestions": [],
+      "extractedConcepts": [],
+      "depthScore": 0.4,
+      "encounteredAs": ["main"],
+      "sessionsAppearedIn": ["session_1748966400000"]
+    }
+  },
+  "connections": [
+    { "from": "OAuth 2.0", "to": "JWT", "strength": 2 },
+    { "from": "JWT", "to": "OAuth 2.0", "strength": 2 },
+    { "from": "OAuth 2.0", "to": "SAML", "strength": 1 },
+    { "from": "SAML", "to": "OAuth 2.0", "strength": 1 },
+    { "from": "SAML", "to": "Entra AD groups", "strength": 1 },
+    { "from": "Entra AD groups", "to": "SAML", "strength": 1 },
+    { "from": "OAuth 2.0", "to": "Entra AD groups", "strength": 1 },
+    { "from": "Entra AD groups", "to": "OAuth 2.0", "strength": 1 },
+    { "from": "OAuth 2.0", "to": "OBO security", "strength": 1 },
+    { "from": "OBO security", "to": "OAuth 2.0", "strength": 1 },
+    { "from": "Secrets Manager", "to": "Environment variables", "strength": 1 },
+    { "from": "Environment variables", "to": "Secrets Manager", "strength": 1 },
+    { "from": "Docker", "to": "Secrets Manager", "strength": 1 },
+    { "from": "Secrets Manager", "to": "Docker", "strength": 1 },
+    { "from": "Docker", "to": "GitHub Actions", "strength": 2 },
+    { "from": "GitHub Actions", "to": "Docker", "strength": 2 },
+    { "from": "GitHub Actions", "to": "Terraform modules", "strength": 1 },
+    { "from": "Terraform modules", "to": "GitHub Actions", "strength": 1 },
+    { "from": "Terraform modules", "to": "S3 buckets", "strength": 1 },
+    { "from": "S3 buckets", "to": "Terraform modules", "strength": 1 },
+    { "from": "Docker", "to": "ECS instances", "strength": 1 },
+    { "from": "ECS instances", "to": "Docker", "strength": 1 },
+    { "from": "Docker", "to": "CVEs", "strength": 2 },
+    { "from": "CVEs", "to": "Docker", "strength": 2 },
+    { "from": "Node.js", "to": "CVEs", "strength": 1 },
+    { "from": "CVEs", "to": "Node.js", "strength": 1 },
+    { "from": "MCP server", "to": "MCP gateways", "strength": 2 },
+    { "from": "MCP gateways", "to": "MCP server", "strength": 2 },
+    { "from": "MCP gateways", "to": "LLM gateways", "strength": 1 },
+    { "from": "LLM gateways", "to": "MCP gateways", "strength": 1 },
+    { "from": "MCP server", "to": "Agentic harness", "strength": 1 },
+    { "from": "Agentic harness", "to": "MCP server", "strength": 1 },
+    { "from": "Agentic harness", "to": "Inference frameworks", "strength": 1 },
+    { "from": "Inference frameworks", "to": "Agentic harness", "strength": 1 },
+    { "from": "LLM gateways", "to": "Inference frameworks", "strength": 1 },
+    { "from": "Inference frameworks", "to": "LLM gateways", "strength": 1 },
+    { "from": "Proxy servers", "to": "MCP gateways", "strength": 1 },
+    { "from": "MCP gateways", "to": "Proxy servers", "strength": 1 },
+    { "from": "Proxy servers", "to": "LLM gateways", "strength": 1 },
+    { "from": "LLM gateways", "to": "Proxy servers", "strength": 1 },
+    { "from": "OAuth 2.0", "to": "MCP gateways", "strength": 1 },
+    { "from": "MCP gateways", "to": "OAuth 2.0", "strength": 1 }
+  ],
+  "learningGaps": [
+    {
+      "concept": "refresh token",
+      "surfacedFrom": "OAuth 2.0",
+      "signal": "Surfaced from a follow-up question on \"OAuth 2.0\" but never directly explored"
+    },
+    {
+      "concept": "CVSS",
+      "surfacedFrom": "CVEs",
+      "signal": "Surfaced from a follow-up question on \"CVEs\" but never directly explored"
+    },
+    {
+      "concept": "RAG",
+      "surfacedFrom": "Agentic harness",
+      "signal": "Surfaced from a follow-up question on \"Agentic harness\" but never directly explored"
+    }
+  ],
+  "recommendedNext": ["refresh token", "CVSS", "RAG", "OBO security", "LLM gateways"]
+}
