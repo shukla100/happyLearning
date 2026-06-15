@@ -43,11 +43,11 @@ export default function LearningMap({ onExplore }) {
     if (graphData.nodes.length === 0) return
     const init = setTimeout(() => {
       if (!graphRef.current) return
-      graphRef.current.d3Force('charge').strength(-200)
+      graphRef.current.d3Force('charge').strength(-80)
       graphRef.current.d3ReheatSimulation()
     }, 100)
     const zoom = setTimeout(() => {
-      graphRef.current?.zoom(1.0, 400)
+      graphRef.current?.zoomToFit(400, 60)
     }, 3000)
     return () => { clearTimeout(init); clearTimeout(zoom) }
   }, [graphData])
