@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import ForceGraph2D from 'react-force-graph-2d'
 
 export default function LearningMap({ onExplore }) {
@@ -35,9 +35,13 @@ export default function LearningMap({ onExplore }) {
     }
   }, [])
 
-  const handleEngineStop = useCallback(() => {
-    graphRef.current?.zoomToFit(400, 40)
-  }, [])
+  useEffect(() => {
+    if (graphData.nodes.length === 0) return
+    const timer = setTimeout(() => {
+      graphRef.current?.zoomToFit(400, 40)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [graphData])
 
   async function handleNodeClick(node) {
     setSelectedConcept(node.id)
@@ -69,7 +73,6 @@ export default function LearningMap({ onExplore }) {
             height={480}
             warmupTicks={100}
             cooldownTicks={0}
-            onEngineStop={handleEngineStop}
             nodeLabel="id"
             linkColor={() => '#5eead4'}
             linkWidth={1.5}
