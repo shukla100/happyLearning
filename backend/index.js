@@ -1,4 +1,6 @@
 require('dotenv').config({ path: '../.env' });
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
@@ -331,6 +333,48 @@ app.post('/end-session', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+// On startup, if there's no real data locally yet (fresh clone or a Render
+// cold start after the disk got wiped), pull the last backup down from the
+// GitHub sessions repo instead of starting from the old demo seed data.
+// If the backup repo is empty too, the server just starts blank.
+async function restoreFromGitHubBackup() {
+  const brain = loadBrain();
+  const hasLocalData = Object.keys(brain.concepts).length > 0;
+  if (hasLocalData) return;
+
+  const token = process.env.GITHUB_TOKEN;
+  const repoFullName = process.env.GITHUB_SESSIONS_REPO;
+  if (!token || !repoFullName) return;
+
+  const [owner, repo] = repoFullName.split('/');
+  const { Octokit } = await import('@octokit/rest');
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    const { data } = await octokit.repos.getContent({ owner, repo, path: 'brain.json' });
+    const content = Buffer.from(data.content, 'base64').toString('utf8');
+    fs.writeFileSync(path.join(__dirname, 'brain.json'), content);
+    console.log('Restored brain.json from GitHub backup.');
+  } catch {
+    console.log('No brain.json found in GitHub backup — starting blank.');
+    return;
+  }
+
+  try {
+    const { data: sessionFiles } = await octokit.repos.getContent({ owner, repo, path: 'sessions' });
+    for (const file of sessionFiles.filter(f => f.type === 'file' && f.name.endsWith('.json'))) {
+      const { data } = await octokit.repos.getContent({ owner, repo, path: file.path });
+      const content = Buffer.from(data.content, 'base64').toString('utf8');
+      fs.writeFileSync(path.join(__dirname, 'sessions', file.name), content);
+    }
+    console.log(`Restored ${sessionFiles.length} session(s) from GitHub backup.`);
+  } catch {
+    console.log('No sessions found in GitHub backup.');
+  }
+}
+
+restoreFromGitHubBackup().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Backend running on http://localhost:${PORT}`);
+  });
 });

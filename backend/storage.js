@@ -3,31 +3,20 @@ const path = require('path');
 
 const SESSIONS_DIR = path.join(__dirname, 'sessions');
 const BRAIN_FILE = path.join(__dirname, 'brain.json');
-const SEED_FILE = path.join(__dirname, 'brain.seed.json');
-const SESSIONS_SEED_DIR = path.join(__dirname, 'sessions.seed');
 
-// Create sessions folder and brain.json if they don't exist (e.g. fresh clone or Render cold start)
+// Create sessions folder and a blank brain.json if they don't exist yet
+// (e.g. fresh clone or Render cold start). index.js may overwrite these
+// with real data restored from the GitHub backup before the server starts.
 if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR);
 
-// Populate sessions from seed if sessions dir is empty
-if (fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.json')).length === 0 && fs.existsSync(SESSIONS_SEED_DIR)) {
-  fs.readdirSync(SESSIONS_SEED_DIR).filter(f => f.endsWith('.json')).forEach(f => {
-    fs.copyFileSync(path.join(SESSIONS_SEED_DIR, f), path.join(SESSIONS_DIR, f));
-  });
-}
-
 if (!fs.existsSync(BRAIN_FILE)) {
-  if (fs.existsSync(SEED_FILE)) {
-    fs.copyFileSync(SEED_FILE, BRAIN_FILE);
-  } else {
-    fs.writeFileSync(BRAIN_FILE, JSON.stringify({
-      lastUpdated: null,
-      concepts: {},
-      connections: [],
-      learningGaps: [],
-      recommendedNext: [],
-    }, null, 2));
-  }
+  fs.writeFileSync(BRAIN_FILE, JSON.stringify({
+    lastUpdated: null,
+    concepts: {},
+    connections: [],
+    learningGaps: [],
+    recommendedNext: [],
+  }, null, 2));
 }
 
 // ─── Session helpers ────────────────────────────────────────────────────────

@@ -44,7 +44,7 @@ JavaScript is used for both frontend and backend.
 | Frontend | Vercel | https://happy-learning-product.vercel.app |
 | Backend | Render (free tier) | https://happylearning-api.onrender.com |
 
-Vercel auto-deploys are not wired up — manual redeploy required after each push. Render free tier has ephemeral disk (resets after ~15 min idle) — brain.json and sessions are repopulated from seed files on cold start.
+Vercel auto-deploys are not wired up — manual redeploy required after each push. Render free tier has ephemeral disk (resets after ~15 min idle) — brain.json and sessions are restored from the GitHub backup repo on cold start (see Seed data below).
 
 **Environment variables:**
 - Local backend: `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `GITHUB_SESSIONS_REPO` in `.env` (gitignored)
@@ -52,14 +52,14 @@ Vercel auto-deploys are not wired up — manual redeploy required after each pus
 - Render: same backend vars set as environment variables in Render dashboard
 - Vercel: `VITE_API_URL=https://happylearning-api.onrender.com` set in Vercel dashboard
 
-## Seed data (decided 2026-06-15)
+## Seed data (decided 2026-06-15, retired 2026-09-16)
 
-The deployed site pre-populates with demo data so the learning map and node panels are immediately usable by portfolio visitors.
+Originally the deployed site pre-populated with demo data (`backend/brain.seed.json`, `backend/sessions.seed/`) so the learning map was immediately usable by portfolio visitors. This was retired on 2026-09-16 so the app only ever shows Garima's real learning data.
 
-- `backend/brain.seed.json` — 20 developer-centric concepts with connections and depth scores
-- `backend/sessions.seed/` — 3 session files with full explanations, real-world examples, and follow-up Q&As for all 20 concepts
-- `backend/storage.js` copies these into `brain.json` and `sessions/` on startup if those are empty (Render cold start)
-- Local use is unaffected — local files already exist so the copy is never triggered
+- `backend/storage.js` no longer copies the seed files. On startup it just ensures a blank `brain.json` and empty `sessions/` folder exist if nothing is there yet.
+- `backend/index.js` (`restoreFromGitHubBackup`) runs before the server starts listening: if local data is empty, it pulls the latest `brain.json` and session files down from the GitHub backup repo (`GITHUB_SESSIONS_REPO`). This is what makes real data survive Render's ~15 min idle disk resets. If the backup repo is empty (or GitHub credentials aren't set), the server just starts blank — it never falls back to the old demo seed data.
+- The unused seed files (`backend/brain.seed.json`, `backend/sessions.seed/`) were left in place but are no longer referenced by any code.
+- The GitHub backup repo (`shukla100/happyLearning-sessions`) had its old demo/test data cleared out on 2026-09-16 so restores start from a clean slate.
 
 ## Working on Windows
 
