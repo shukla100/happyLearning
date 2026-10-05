@@ -722,3 +722,275 @@ header p {
   font-size: 12px;
   line-height: 1.5;
 }
+
+.main-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.nav-btn {
+  background: none;
+  border: 1.5px solid #99f6e4;
+  color: #0d9488;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover {
+  background: #f0fdfa;
+}
+
+.nav-btn.active {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: #fff;
+}
+
+.journal-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.journal-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #99f6e4;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.journal-new-topic-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.journal-new-topic-form input {
+  flex: 1;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1.5px solid #99f6e4;
+  border-radius: 8px;
+  color: #134e4a;
+  font-size: 13px;
+  outline: none;
+}
+
+.journal-new-topic-form input:focus {
+  border-color: #0d9488;
+}
+
+.journal-new-topic-form button {
+  width: 36px;
+  background: #0d9488;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.journal-new-topic-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.journal-topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journal-topic-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.journal-topic-item.active {
+  background: #f0fdfa;
+}
+
+.journal-topic-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 9px 8px;
+  color: #134e4a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.journal-topic-name:hover {
+  background: #f0fdfa;
+}
+
+.journal-topic-count {
+  color: #5eead4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.journal-topic-rename-input {
+  flex: 1;
+  padding: 8px 8px;
+  border: 1.5px solid #0d9488;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #134e4a;
+  outline: none;
+}
+
+.journal-topic-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.journal-topic-actions button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.journal-topic-actions button:hover {
+  color: #0d9488;
+  background: #f0fdfa;
+}
+
+.journal-main {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1.5px solid #f0fdfa;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 24px rgba(13, 148, 136, 0.07);
+}
+
+.journal-topic-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #134e4a;
+  margin-bottom: 18px;
+}
+
+.journal-new-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.journal-new-note-form textarea,
+.journal-note textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f0fdfa;
+  border: 1.5px solid #99f6e4;
+  border-radius: 10px;
+  color: #134e4a;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.journal-new-note-form textarea:focus,
+.journal-note textarea:focus {
+  border-color: #0d9488;
+}
+
+.journal-new-note-form button {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: #0d9488;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.journal-new-note-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.journal-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.journal-note {
+  border: 1px solid #f0fdfa;
+  background: #fafffe;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.journal-note-content {
+  color: #111827;
+  line-height: 1.7;
+  font-size: 14px;
+  white-space: pre-wrap;
+  margin-bottom: 10px;
+}
+
+.journal-note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.journal-note-date {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.journal-note-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.journal-note-actions button {
+  background: none;
+  border: none;
+  color: #0d9488;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.journal-note-actions button:hover {
+  text-decoration: underline;
+}
+
+.journal-empty-hint {
+  color: #9ca3af;
+  font-size: 13px;
+}

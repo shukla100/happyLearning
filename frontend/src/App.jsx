@@ -3,8 +3,10 @@ import './App.css'
 import NeuralBackground from './NeuralBackground'
 import TreeView from './TreeView'
 import LearningMap from './LearningMap'
+import Journal from './Journal'
 
 function App() {
+  const [view, setView] = useState('explore')
   const [input, setInput] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -133,6 +135,25 @@ function App() {
         <p>Type a concept. Follow your curiosity.</p>
       </header>
 
+      <nav className="main-nav">
+        <button
+          className={view === 'explore' ? 'nav-btn active' : 'nav-btn'}
+          onClick={() => setView('explore')}
+        >
+          Explore
+        </button>
+        <button
+          className={view === 'journal' ? 'nav-btn active' : 'nav-btn'}
+          onClick={() => setView('journal')}
+        >
+          Journal
+        </button>
+      </nav>
+
+      {view === 'journal' && <Journal />}
+
+      {view === 'explore' && (
+      <>
       <form onSubmit={handleSubmit} className="input-form">
         <input
           type="text"
@@ -265,6 +286,8 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )

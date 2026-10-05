@@ -3,6 +3,7 @@ const path = require('path');
 
 const SESSIONS_DIR = path.join(__dirname, 'sessions');
 const BRAIN_FILE = path.join(__dirname, 'brain.json');
+const JOURNAL_FILE = path.join(__dirname, 'journal.json');
 
 // Create sessions folder and a blank brain.json if they don't exist yet
 // (e.g. fresh clone or Render cold start). index.js may overwrite these
@@ -17,6 +18,10 @@ if (!fs.existsSync(BRAIN_FILE)) {
     learningGaps: [],
     recommendedNext: [],
   }, null, 2));
+}
+
+if (!fs.existsSync(JOURNAL_FILE)) {
+  fs.writeFileSync(JOURNAL_FILE, JSON.stringify({ topics: [] }, null, 2));
 }
 
 // ─── Session helpers ────────────────────────────────────────────────────────
@@ -283,6 +288,74 @@ function recalculateDepthScore(brain, concept) {
   entry.depthScore = Math.min(parseFloat((exploredDirectly + followUpWeight + multiSession).toFixed(2)), 1);
 }
 
+// ─── Journal helpers ────────────────────────────────────────────────────────
+
+function generateTopicId() {
+  return `topic_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function generateNoteId() {
+  return `note_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function loadJournal() {
+  return JSON.parse(fs.readFileSync(JOURNAL_FILE, 'utf8'));
+}
+
+function saveJournal(journal) {
+  fs.writeFileSync(JOURNAL_FILE, JSON.stringify(journal, null, 2));
+}
+
+function createTopic(journal, name) {
+  const topic = {
+    id: generateTopicId(),
+    name,
+    createdAt: new Date().toISOString(),
+    notes: [],
+  };
+  journal.topics.push(topic);
+  return topic;
+}
+
+function renameTopic(journal, topicId, name) {
+  const topic = journal.topics.find(t => t.id === topicId);
+  if (!topic) return null;
+  topic.name = name;
+  return topic;
+}
+
+function deleteTopic(journal, topicId) {
+  journal.topics = journal.topics.filter(t => t.id !== topicId);
+}
+
+function addNote(journal, topicId, content) {
+  const topic = journal.topics.find(t => t.id === topicId);
+  if (!topic) return null;
+  const note = {
+    id: generateNoteId(),
+    content,
+    createdAt: new Date().toISOString(),
+    updatedAt: null,
+  };
+  topic.notes.unshift(note);
+  return note;
+}
+
+function editNote(journal, topicId, noteId, content) {
+  const topic = journal.topics.find(t => t.id === topicId);
+  const note = topic?.notes.find(n => n.id === noteId);
+  if (!note) return null;
+  note.content = content;
+  note.updatedAt = new Date().toISOString();
+  return note;
+}
+
+function deleteNote(journal, topicId, noteId) {
+  const topic = journal.topics.find(t => t.id === topicId);
+  if (!topic) return;
+  topic.notes = topic.notes.filter(n => n.id !== noteId);
+}
+
 module.exports = {
   createNewSession,
   createNewNode,
@@ -297,4 +370,12 @@ module.exports = {
   recordConnection,
   recalculateDepthScore,
   buildBrainContext,
+  loadJournal,
+  saveJournal,
+  createTopic,
+  renameTopic,
+  deleteTopic,
+  addNote,
+  editNote,
+  deleteNote,
 };

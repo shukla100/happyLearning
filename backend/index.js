@@ -17,6 +17,14 @@ const {
   recordConnection,
   recordFollowUp,
   buildBrainContext,
+  loadJournal,
+  saveJournal,
+  createTopic,
+  renameTopic,
+  deleteTopic,
+  addNote,
+  editNote,
+  deleteNote,
 } = require('./storage');
 
 const app = express();
@@ -272,6 +280,81 @@ app.get('/brain', (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Could not load brain' });
   }
+});
+
+app.get('/journal', (req, res) => {
+  try {
+    const journal = loadJournal();
+    res.json(journal);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not load journal' });
+  }
+});
+
+app.post('/journal/topics', (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Topic name is required' });
+  }
+
+  const journal = loadJournal();
+  const topic = createTopic(journal, name.trim());
+  saveJournal(journal);
+  res.json(topic);
+});
+
+app.put('/journal/topics/:topicId', (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Topic name is required' });
+  }
+
+  const journal = loadJournal();
+  const topic = renameTopic(journal, req.params.topicId, name.trim());
+  if (!topic) return res.status(404).json({ error: 'Topic not found' });
+  saveJournal(journal);
+  res.json(topic);
+});
+
+app.delete('/journal/topics/:topicId', (req, res) => {
+  const journal = loadJournal();
+  deleteTopic(journal, req.params.topicId);
+  saveJournal(journal);
+  res.json({ success: true });
+});
+
+app.post('/journal/topics/:topicId/notes', (req, res) => {
+  const { content } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'Note content is required' });
+  }
+
+  const journal = loadJournal();
+  const note = addNote(journal, req.params.topicId, content.trim());
+  if (!note) return res.status(404).json({ error: 'Topic not found' });
+  saveJournal(journal);
+  res.json(note);
+});
+
+app.put('/journal/topics/:topicId/notes/:noteId', (req, res) => {
+  const { content } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'Note content is required' });
+  }
+
+  const journal = loadJournal();
+  const note = editNote(journal, req.params.topicId, req.params.noteId, content.trim());
+  if (!note) return res.status(404).json({ error: 'Note not found' });
+  saveJournal(journal);
+  res.json(note);
+});
+
+app.delete('/journal/topics/:topicId/notes/:noteId', (req, res) => {
+  const journal = loadJournal();
+  deleteNote(journal, req.params.topicId, req.params.noteId);
+  saveJournal(journal);
+  res.json({ success: true });
 });
 
 app.post('/end-session', async (req, res) => {

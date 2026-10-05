@@ -9,6 +9,7 @@ node_modules/
 # Personal learning data - stays local, never pushed
 backend/sessions/
 backend/brain.json
+backend/journal.json
 
 # Claude Code internal memory files
 .claude/
