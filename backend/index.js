@@ -301,6 +301,7 @@ app.post('/journal/topics', (req, res) => {
   const journal = loadJournal();
   const topic = createTopic(journal, name.trim());
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json(topic);
 });
 
@@ -314,6 +315,7 @@ app.put('/journal/topics/:topicId', (req, res) => {
   const topic = renameTopic(journal, req.params.topicId, name.trim());
   if (!topic) return res.status(404).json({ error: 'Topic not found' });
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json(topic);
 });
 
@@ -321,6 +323,7 @@ app.delete('/journal/topics/:topicId', (req, res) => {
   const journal = loadJournal();
   deleteTopic(journal, req.params.topicId);
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json({ success: true });
 });
 
@@ -334,6 +337,7 @@ app.post('/journal/topics/:topicId/notes', (req, res) => {
   const note = addNote(journal, req.params.topicId, content.trim());
   if (!note) return res.status(404).json({ error: 'Topic not found' });
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json(note);
 });
 
@@ -347,6 +351,7 @@ app.put('/journal/topics/:topicId/notes/:noteId', (req, res) => {
   const note = editNote(journal, req.params.topicId, req.params.noteId, content.trim());
   if (!note) return res.status(404).json({ error: 'Note not found' });
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json(note);
 });
 
@@ -354,8 +359,66 @@ app.delete('/journal/topics/:topicId/notes/:noteId', (req, res) => {
   const journal = loadJournal();
   deleteNote(journal, req.params.topicId, req.params.noteId);
   saveJournal(journal);
+  backupJournalToGitHub();
   res.json({ success: true });
 });
+
+// Shared helper for pushing any JSON file to the GitHub backup repo.
+// Used both by /end-session (session + brain) and by every journal route
+// (journal.json), since journal entries aren't tied to a session and need
+// their own trigger to survive Render's disk resets.
+async function pushFileToGitHub(filePath, content) {
+  const token = process.env.GITHUB_TOKEN;
+  const repoFullName = process.env.GITHUB_SESSIONS_REPO;
+  if (!token || !repoFullName) {
+    throw new Error('GitHub credentials not configured in .env');
+  }
+
+  const [owner, repo] = repoFullName.split('/');
+
+  // Dynamic import works here because @octokit/rest v22 is ESM-only
+  const { Octokit } = await import('@octokit/rest');
+  const octokit = new Octokit({ auth: token });
+
+  const encoded = Buffer.from(JSON.stringify(content, null, 2)).toString('base64');
+
+  // Check if the file already exists (needed to get its SHA for updates)
+  let sha;
+  try {
+    const existing = await octokit.repos.getContent({ owner, repo, path: filePath });
+    sha = existing.data.sha;
+  } catch {
+    sha = undefined;
+  }
+
+  await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path: filePath,
+    message: `update: ${filePath}`,
+    content: encoded,
+    sha,
+  });
+}
+
+// Fire-and-forget backup of journal.json — called after every journal change.
+// Errors are only logged so a GitHub hiccup never breaks the user-facing request.
+//
+// GitHub rejects a write if the file's "sha" (a hash identifying its current
+// version) doesn't match what it expects — its way of detecting two writes
+// racing each other. Two journal changes made in quick succession (e.g. adding
+// a topic right before adding a note) would otherwise both read the "old" sha
+// and collide. Chaining onto `journalBackupQueue` instead of calling
+// pushFileToGitHub directly forces every backup to wait for the previous one
+// to finish, so they always run one at a time.
+let journalBackupQueue = Promise.resolve();
+function backupJournalToGitHub() {
+  journalBackupQueue = journalBackupQueue
+    .then(() => pushFileToGitHub('journal.json', loadJournal()))
+    .catch(err => {
+      console.error('Journal backup to GitHub failed:', err.message);
+    });
+}
 
 app.post('/end-session', async (req, res) => {
   const { sessionId } = req.body;
@@ -369,45 +432,10 @@ app.post('/end-session', async (req, res) => {
     return res.status(404).json({ error: 'Session not found' });
   }
 
-  const token = process.env.GITHUB_TOKEN;
-  const repoFullName = process.env.GITHUB_SESSIONS_REPO;
-
-  if (!token || !repoFullName) {
-    return res.status(500).json({ error: 'GitHub credentials not configured in .env' });
-  }
-
-  const [owner, repo] = repoFullName.split('/');
-
-  // Dynamic import works here because @octokit/rest v22 is ESM-only
-  const { Octokit } = await import('@octokit/rest');
-  const octokit = new Octokit({ auth: token });
-
-  async function pushFile(filePath, content) {
-    const encoded = Buffer.from(JSON.stringify(content, null, 2)).toString('base64');
-
-    // Check if the file already exists (needed to get its SHA for updates)
-    let sha;
-    try {
-      const existing = await octokit.repos.getContent({ owner, repo, path: filePath });
-      sha = existing.data.sha;
-    } catch {
-      sha = undefined;
-    }
-
-    await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: filePath,
-      message: `session update: ${filePath}`,
-      content: encoded,
-      sha,
-    });
-  }
-
   try {
     const brain = loadBrain();
-    await pushFile(`sessions/${sessionId}.json`, session);
-    await pushFile('brain.json', brain);
+    await pushFileToGitHub(`sessions/${sessionId}.json`, session);
+    await pushFileToGitHub('brain.json', brain);
 
     res.json({ success: true, message: 'Session and brain backed up to GitHub' });
   } catch (err) {
@@ -453,6 +481,15 @@ async function restoreFromGitHubBackup() {
     console.log(`Restored ${sessionFiles.length} session(s) from GitHub backup.`);
   } catch {
     console.log('No sessions found in GitHub backup.');
+  }
+
+  try {
+    const { data } = await octokit.repos.getContent({ owner, repo, path: 'journal.json' });
+    const content = Buffer.from(data.content, 'base64').toString('utf8');
+    fs.writeFileSync(path.join(__dirname, 'journal.json'), content);
+    console.log('Restored journal.json from GitHub backup.');
+  } catch {
+    console.log('No journal.json found in GitHub backup.');
   }
 }
 
